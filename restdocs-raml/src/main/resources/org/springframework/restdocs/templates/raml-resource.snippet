@@ -1,0 +1,53 @@
+{{resource}}:
+  {{method}}:
+    description: {{description}}
+    {{#scopes}}
+    securedBy: {{scopes}}
+    {{/scopes}}
+    {{#traits}}
+    is: {{traits}}
+    {{/traits}}
+  {{#requestBodyPresent}}
+    body:
+      {{contentTypeRequest}}:
+      {{#requestFieldsPresent}}
+        schema: |
+          {
+            "$schema": "http://json-schema.org/draft-03/schema",
+            "type": "object",
+            "properties": {
+            {{#requestFields}}
+              "{{path}}": {
+                "description": "{{description}}",
+                "type": "{{type}}",
+                "required": {{required}}
+              }{{^last}},{{/last}}
+            {{/requestFields}}
+            }
+          }
+      {{/requestFieldsPresent}}
+        example: !include {{requestBodyFileName}}
+  {{/requestBodyPresent}}
+  {{#responseBodyPresent}}
+    responses:
+      {{status}}:
+        body:
+          {{contentTypeResponse}}:
+          {{#responseFieldsPresent}}
+            schema: |
+              {
+                "$schema": "http://json-schema.org/draft-03/schema",
+                "type": "object",
+                "properties": {
+                {{#responseFields}}
+                  "{{path}}": {
+                    "description": "{{description}}",
+                    "type": "{{type}}",
+                    "required": {{required}}
+                  }{{^last}},{{/last}}
+                {{/responseFields}}
+                }
+              }
+           {{/responseFieldsPresent}}
+            example: !include {{responseBodyFileName}}
+  {{/responseBodyPresent}}

@@ -1,0 +1,27 @@
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.3.4'
+    id 'com.github.ben-manes.versions' version '0.14.0'
+    id 'publishing'
+}
+
+repositories {
+    jcenter()
+}
+
+scmVersion {
+    tag {
+        prefix = ''
+    }
+
+    hooks {
+        pre 'fileUpdate', [file: 'README.md', pattern: {v,p -> /($v)/}, replacement: {v, p -> "$v"}]
+        pre 'commit'
+    }
+}
+
+allprojects {
+    project.version = scmVersion.version
+}
+
+publish.dependsOn(':restdocs-wiremock:bintrayUpload')
+publish.dependsOn(':wiremock-spring-boot-starter:bintrayUpload')

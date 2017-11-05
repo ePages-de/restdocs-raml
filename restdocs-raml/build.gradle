@@ -1,0 +1,80 @@
+plugins {
+    id 'java'
+    id 'maven'
+    id 'maven-publish'
+    id 'jacoco'
+    id "com.jfrog.bintray" version '1.7.3'
+    id 'com.github.kt3k.coveralls' version '2.8.1'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile "org.springframework.restdocs:spring-restdocs-core:1.2.2.RELEASE"
+    compileOnly 'org.projectlombok:lombok:1.16.18'
+    testCompile 'org.projectlombok:lombok:1.16.18'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:3.8.0'
+    testCompile "org.springframework.restdocs:spring-restdocs-mockmvc:1.2.2.RELEASE"
+    testCompile 'org.springframework.boot:spring-boot-starter-web:1.5.8.RELEASE'
+    testCompile 'org.springframework.boot:spring-boot-starter-test:1.5.8.RELEASE'
+}
+
+group = 'com.epages'
+description = 'Adds RAML support for Spring REST Docs'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
+
+tasks.coveralls {
+    dependsOn 'check'
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifactId 'restdocs-raml'
+            groupId = project.group
+
+            artifact sourceJar {
+                classifier 'sources'
+            }
+        }
+    }
+}
+
+
+bintray {
+    user = project.findProperty('bintrayUser')   ?: System.getenv('BINTRAY_USER')
+    key  = project.findProperty('bintrayApiKey') ?: System.getenv('BINTRAY_API_KEY')
+    publications = ['mavenJava','sourceJar']
+    publish = true
+    pkg {
+        repo = "maven"
+        name = 'restdocs-raml'
+        userOrg = 'epages'
+        websiteUrl = 'https://github.com/ePages-de/restdocs-raml'
+        issueTrackerUrl = 'https://github.com/ePages-de/restdocs-raml/issues'
+        vcsUrl = 'https://github.com/ePages-de/restdocs-raml.git'
+        githubRepo = 'ePages-de/restdocs-raml'
+        githubReleaseNotesFile = 'README.md'
+        licenses = ['Apache-2.0']
+    }
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.4'
+}
