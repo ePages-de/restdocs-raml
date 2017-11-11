@@ -80,5 +80,5 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '3.4'
+	gradleVersion = '4.3'
 }

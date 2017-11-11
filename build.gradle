@@ -25,3 +25,7 @@ allprojects {
 
 publish.dependsOn(':restdocs-raml:bintrayUpload')
 publish.dependsOn(':restdocs-raml-gradle-plugin:bintrayUpload')
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.3'
+}
