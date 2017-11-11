@@ -23,5 +23,5 @@ allprojects {
     project.version = scmVersion.version
 }
 
-publish.dependsOn(':restdocs-wiremock:bintrayUpload')
-publish.dependsOn(':wiremock-spring-boot-starter:bintrayUpload')
+publish.dependsOn(':restdocs-raml:bintrayUpload')
+publish.dependsOn(':restdocs-raml-gradle-plugin:bintrayUpload')
