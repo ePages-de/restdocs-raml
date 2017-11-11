@@ -11,5 +11,5 @@ after_success:
 - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then ./publish.sh; fi
 env:
   global:
-  - CI_NAME=travis-ci
+  - CI_NAME=travis
   - secure: BsSQBKJyrcf02YtkbPf6XhK9AcRqRaI/y98KW3Rr6BFIrRSxm2/xIZxEc+/f213ZfQiwVx4vt0ozAL2IRq8TEimvIaovjwaHr80NR8hFtQBHmJCS0wQem6tmPQxZfA1Cx93rtssjXpEl5l/Ax8MrrZl62VFVjlrxaxD+s9ZhJwvEzZuRBwqLqGgavWEEGLC6AW24AvjGPgk2aEgFq8Hy3pMFIyG1ZVhbdfogvISdJE3WQQHQnGcAArEtt69YeoAxnKlWeAL6n3okJmj25r/C1s0fyCOpPhkfEEF5IVjciqf4zYk8U9hrowevCH+6G9RRd+4aUrJg4dxlZ/U8By1QW7oyqyYjxcAGONJZrsiCvqUfhMSP6NgMKJXgFUu+0pOnWrh2q8TS51HrZtRmtCuX6KPgCavmH399uXLWe3CZ7CHu/EQc8jCUhaNKe7wmm3lcQthHLNM8g5vyH/y2WsA0vCwyTmv65ffo9Ptls8Agk6oj6vzmOVyAtCekPiQ9OKam7DUVQjFnnoIrEBKpz/plebkIEyvoeaXVbWPxWu4h5kkZlQTLEi4wUqJfo6N9v7HZufZBiGCYPPUyIcmGf+bE4MEvWbVy8aTZzJ8OECM3hH3DYUq/HOD5PyNje/koePOGaqdcYe45qAG33FKku4iuavpRu65RRav9+aVHfHD0WE0=
