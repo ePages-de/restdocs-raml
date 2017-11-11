@@ -1,5 +1,7 @@
 apply plugin: 'groovy'
 
+apply plugin: 'com.jfrog.bintray'
+
 repositories {
     maven { url "https://plugins.gradle.org/m2/" }
     maven { url "https://repo.spring.io/release" }

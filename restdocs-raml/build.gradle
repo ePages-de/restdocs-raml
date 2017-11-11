@@ -6,6 +6,8 @@ plugins {
     id 'com.github.kt3k.coveralls' version '2.8.2'
 }
 
+apply plugin: 'com.jfrog.bintray'
+
 repositories {
     jcenter()
     maven { url 'https://jitpack.io' }
