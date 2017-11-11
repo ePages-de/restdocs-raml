@@ -12,7 +12,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.restdocs.RestDocumentationContext;
@@ -25,30 +24,19 @@ public class RamlResourceSnippet extends TemplatedSnippet {
 
     private static final String SNIPPET_NAME = "raml-resource";
 
-    private static final List<OperationHandler> DEFAULT_HANDLERS = Arrays.asList(
-            new JwtScopeHandler(),
-            new RequestHandler(),
-            new ResponseHandler(),
-            new TraitExtractorChain(Arrays.asList(new PrivateResourceTraitExtractor()))
-    );
-
     private final RamlResourceSnippetParameters parameters;
 
     private final OperationHandlerChain handlerChain;
 
-    protected RamlResourceSnippet(RamlResourceSnippetParameters parameters, OperationHandler... operationHandlers) {
+    protected RamlResourceSnippet(RamlResourceSnippetParameters parameters) {
         super(SNIPPET_NAME, null);
         this.parameters = parameters;
 
-        handlerChain = new OperationHandlerChain(getHandlers(operationHandlers));
-    }
-
-    private List<OperationHandler> getHandlers(OperationHandler[] operationHandlers) {
-        if (operationHandlers == null || operationHandlers.length == 0) {
-            return DEFAULT_HANDLERS;
-        } else {
-            return Arrays.asList(operationHandlers);
-        }
+        handlerChain = new OperationHandlerChain(Arrays.asList(
+                new JwtScopeHandler(),
+                new RequestHandler(),
+                new ResponseHandler(),
+                new TraitExtractorChain(Arrays.asList(new PrivateResourceTraitExtractor()))));
     }
 
     @Override
@@ -103,7 +91,6 @@ public class RamlResourceSnippet extends TemplatedSnippet {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
     }
 
     private String getUriPath(Operation operation) {
