@@ -139,8 +139,7 @@ public class JsonSchemaFromFieldDescriptorsGeneratorTest {
     }
 
     private void whenSchemaGenerated() {
-        schemaString = generator.generateSchema("my test schema", fieldDescriptors);
-        System.out.println(schemaString);
+        schemaString = generator.generateSchema(fieldDescriptors);
         schema = SchemaLoader.load(new JSONObject(schemaString));
     }
 

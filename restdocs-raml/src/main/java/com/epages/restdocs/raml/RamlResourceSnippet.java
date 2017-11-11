@@ -1,7 +1,6 @@
 package com.epages.restdocs.raml;
 
-import static com.epages.restdocs.raml.RequestHandler.REQUEST_BODY_FILE_NAME_SUFFIX;
-import static com.epages.restdocs.raml.ResponseHandler.RESPONSE_BODY_FILE_NAME_SUFFIX;
+import static java.util.Collections.singletonList;
 import static org.springframework.restdocs.generate.RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE;
 
 import java.io.File;
@@ -20,13 +19,17 @@ import org.springframework.restdocs.snippet.TemplatedSnippet;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
-public class RamlResourceSnippet extends TemplatedSnippet {
+import com.epages.restdocs.raml.jsonschema.JsonSchemaFromFieldDescriptorsGenerator;
+
+public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTrait {
 
     private static final String SNIPPET_NAME = "raml-resource";
 
     private final RamlResourceSnippetParameters parameters;
 
     private final OperationHandlerChain handlerChain;
+
+    private final JsonSchemaFromFieldDescriptorsGenerator jsonSchemasGenerator = new JsonSchemaFromFieldDescriptorsGenerator();
 
     protected RamlResourceSnippet(RamlResourceSnippetParameters parameters) {
         super(SNIPPET_NAME, null);
@@ -36,7 +39,7 @@ public class RamlResourceSnippet extends TemplatedSnippet {
                 new JwtScopeHandler(),
                 new RequestHandler(),
                 new ResponseHandler(),
-                new TraitExtractorChain(Arrays.asList(new PrivateResourceTraitExtractor()))));
+                new TraitExtractorChain(singletonList(new PrivateResourceTraitExtractor()))));
     }
 
     @Override
@@ -59,29 +62,38 @@ public class RamlResourceSnippet extends TemplatedSnippet {
         storeRequestBody(operation);
 
         storeResponseBody(operation);
+
+        storeRequestJsonSchema(operation);
+
+        storeResponseJsonSchema(operation);
     }
 
-    private void storeRequestBody(Operation operation) {
-        if (!StringUtils.isEmpty(operation.getRequest().getContentAsString())) {
-            storeBodyJson(operation, getRequestFileName(operation), operation.getRequest().getContentAsString());
+    private void storeRequestJsonSchema(Operation operation) {
+        if (shouldGenerateRequestSchemaFile(operation, parameters)) {
+            storeFile(operation, getRequestSchemaFileName(operation.getName()),
+                    jsonSchemasGenerator.generateSchema(parameters.getRequestFieldDescriptors()));
         }
     }
 
-    private String getRequestFileName(Operation operation) {
-        return operation.getName() + REQUEST_BODY_FILE_NAME_SUFFIX;
+    private void storeResponseJsonSchema(Operation operation) {
+        if (shouldGenerateResponseSchemaFile(operation, parameters)) {
+            storeFile(operation, getResponseSchemaFileName(operation.getName()),
+                    jsonSchemasGenerator.generateSchema(parameters.getResponseFieldDescriptors()));
+        }
+    }
+    private void storeRequestBody(Operation operation) {
+        if (!StringUtils.isEmpty(operation.getRequest().getContentAsString())) {
+            storeFile(operation, getRequestFileName(operation.getName()), operation.getRequest().getContentAsString());
+        }
     }
 
     private void storeResponseBody(Operation operation) {
         if (!StringUtils.isEmpty(operation.getResponse().getContentAsString())) {
-            storeBodyJson(operation, getResponseFileName(operation), operation.getResponse().getContentAsString());
+            storeFile(operation, getResponseFileName(operation.getName()), operation.getResponse().getContentAsString());
         }
     }
 
-    private String getResponseFileName(Operation operation) {
-        return operation.getName() + RESPONSE_BODY_FILE_NAME_SUFFIX;
-    }
-
-    private void storeBodyJson(Operation operation, String filename, String content) {
+    private void storeFile(Operation operation, String filename, String content) {
         RestDocumentationContext context = (RestDocumentationContext) operation
                 .getAttributes().get(RestDocumentationContext.class.getName());
 

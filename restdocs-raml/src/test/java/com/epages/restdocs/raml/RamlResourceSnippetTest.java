@@ -1,6 +1,8 @@
 package com.epages.restdocs.raml;
 
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -16,6 +18,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.restdocs.operation.Operation;
+import org.springframework.restdocs.payload.FieldDescriptor;
 
 import lombok.SneakyThrows;
 
@@ -28,12 +31,15 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private List<FieldDescriptor> requestFieldDescriptors = emptyList();
+    private List<FieldDescriptor> responseFieldDescriptors = emptyList();
     private List<String> fragmentFileContentLines;
 
     @Test
     @SneakyThrows
     public void should_generate_raml_fragment_for_operation_with_request_body() {
         givenOperationWithRequestBody();
+        givenRequestFieldDescriptor();
 
         whenRamlSnippetInvoked();
 
@@ -42,12 +48,16 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         then(generatedRequestJsonFile()).exists();
         then(generatedRequestJsonFile()).hasContent(operation.getRequest().getContentAsString());
         then(generatedResponseJsonFile()).doesNotExist();
+        then(generatedRequestSchemaFile()).exists();
+        then(generatedResponseSchemaFile()).doesNotExist();
     }
 
     @Test
     @SneakyThrows
     public void should_generate_raml_fragment_for_operation_with_request_and_response_body() {
         givenOperationWithRequestAndResponseBody();
+        givenRequestFieldDescriptor();
+        givenResponseFieldDescriptor();
 
         whenRamlSnippetInvoked();
 
@@ -57,6 +67,8 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         then(generatedRequestJsonFile()).hasContent(operation.getRequest().getContentAsString());
         then(generatedResponseJsonFile()).exists();
         then(generatedResponseJsonFile()).hasContent(operation.getResponse().getContentAsString());
+        then(generatedRequestSchemaFile()).exists();
+        then(generatedResponseSchemaFile()).exists();
     }
 
     @Test
@@ -70,6 +82,9 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         then(generatedRamlFragmentFile()).hasSameContentAs(new File("src/test/resources/expected-snippet-no-body.adoc"));
         then(generatedRequestJsonFile()).doesNotExist();
         then(generatedResponseJsonFile()).doesNotExist();
+
+        then(generatedRequestSchemaFile()).doesNotExist();
+        then(generatedResponseSchemaFile()).doesNotExist();
     }
 
     @SneakyThrows
@@ -111,6 +126,14 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
                 .build();
     }
 
+    private void givenRequestFieldDescriptor() {
+        requestFieldDescriptors = singletonList(fieldWithPath("comment").description("description"));
+    }
+
+    private void givenResponseFieldDescriptor() {
+        responseFieldDescriptors = singletonList(fieldWithPath("comment").description("description"));
+    }
+
     private void givenOperationWithRequestAndResponseBody() {
         final OperationBuilder operationBuilder = new OperationBuilder("test", temporaryFolder.getRoot())
                 .attribute(ATTRIBUTE_NAME_URL_TEMPLATE, "http://localhost:8080/some/{id}");
@@ -132,7 +155,8 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     private void whenRamlSnippetInvoked() throws IOException {
         ramlResource(RamlResourceSnippetParameters.builder()
                 .description("some resource")
-                .requestFieldDescriptors(fieldWithPath("comment").description("description"))
+                .requestFieldDescriptors(requestFieldDescriptors.toArray(new FieldDescriptor[0]))
+                .responseFieldDescriptors(responseFieldDescriptors.toArray(new FieldDescriptor[0]))
                 .build()).document(operation);
     }
 }

@@ -11,20 +11,7 @@
     body:
       {{contentTypeRequest}}:
       {{#requestFieldsPresent}}
-        schema: |
-          {
-            "$schema": "http://json-schema.org/draft-03/schema",
-            "type": "object",
-            "properties": {
-            {{#requestFields}}
-              "{{path}}": {
-                "description": "{{description}}",
-                "type": "{{type}}",
-                "required": {{required}}
-              }{{^last}},{{/last}}
-            {{/requestFields}}
-            }
-          }
+        schema: !include {{requestSchemaFileName}}
       {{/requestFieldsPresent}}
         example: !include {{requestBodyFileName}}
   {{/requestBodyPresent}}
@@ -34,20 +21,7 @@
         body:
           {{contentTypeResponse}}:
           {{#responseFieldsPresent}}
-            schema: |
-              {
-                "$schema": "http://json-schema.org/draft-03/schema",
-                "type": "object",
-                "properties": {
-                {{#responseFields}}
-                  "{{path}}": {
-                    "description": "{{description}}",
-                    "type": "{{type}}",
-                    "required": {{required}}
-                  }{{^last}},{{/last}}
-                {{/responseFields}}
-                }
-              }
-           {{/responseFieldsPresent}}
+            schema: !include {{responseSchemaFileName}}
+          {{/responseFieldsPresent}}
             example: !include {{responseBodyFileName}}
   {{/responseBodyPresent}}

@@ -12,22 +12,23 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.util.StringUtils;
 
-public class ResponseHandler extends AbstractFieldHandler {
+public class ResponseHandler implements OperationHandler, FileNameTrait {
 
     static final String RESPONSE_BODY_FILE_NAME_SUFFIX = "-response.json";
 
-    @Override
     public Map<String, Object> generateModel(Operation operation, RamlResourceSnippetParameters parameters) {
         final OperationResponse response = operation.getResponse();
         if (!StringUtils.isEmpty(response.getContentAsString())) {
             Map<String, Object> model = new HashMap<>();
-            model.put("responseBodyFileName", getResponseFileName(operation));
+            model.put("responseBodyFileName", getResponseFileName(operation.getName()));
             model.put("responseBodyPresent", true);
             model.put("contentTypeResponse", response.getHeaders().getContentType().getType() + "/" + response.getHeaders().getContentType().getSubtype());
             if (!parameters.getResponseFieldDescriptors().isEmpty()) {
                 validateResponseFieldsAndInferTypeInformation(operation, parameters);
-                model.put("responseFields", transformDescriptorsToModel(parameters.getResponseFieldDescriptors()));
                 model.put("responseFieldsPresent", true);
+                if (shouldGenerateResponseSchemaFile(operation, parameters)) {
+                    model.put("responseSchemaFileName", getResponseSchemaFileName(operation.getName()));
+                }
             }
             return model;
         }
@@ -36,10 +37,6 @@ public class ResponseHandler extends AbstractFieldHandler {
 
     private void validateResponseFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {
         new ResponseFieldsSnippetWrapper(parameters.getResponseFieldDescriptors()).validateFieldsAndInferTypeInformation(operation);
-    }
-
-    private String getResponseFileName(Operation operation) {
-        return operation.getName() + RESPONSE_BODY_FILE_NAME_SUFFIX;
     }
 
     /**

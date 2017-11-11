@@ -6,7 +6,6 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -56,20 +55,13 @@ public class RequestHandlerTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void should_add_field_information() {
+    public void should_add_schema_file() {
         givenRequestWithJsonBody();
 
         whenModelGeneratedWithFieldDescriptors(fieldWithPath("comment").description("some"));
 
         then(model).containsEntry("requestFieldsPresent", true);
-        then(model).containsKeys("requestFields");
-        List<Map<Object, Object>> requestFields = (List<Map<Object, Object>>) model.get("requestFields");
-        then(requestFields).hasSize(1);
-        then(requestFields.get(0)).containsEntry("path", "comment");
-        then(requestFields.get(0)).containsEntry("description", "some");
-        then(requestFields.get(0)).containsEntry("type", "string");
-        then(requestFields.get(0)).containsEntry("required", true);
-        then(requestFields.get(0)).containsEntry("last", true);
+        then(model).containsEntry("requestSchemaFileName", "test-schema-request.json");
     }
 
     private void whenModelGenerated() {

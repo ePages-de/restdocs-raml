@@ -3,21 +3,11 @@
     description: some resource
     body:
       application/json:
-        schema: |
-          {
-            "$schema": "http://json-schema.org/draft-03/schema",
-            "type": "object",
-            "properties": {
-              "comment": {
-                "description": "description",
-                "type": "string",
-                "required": true
-              }
-            }
-          }
+        schema: !include test-schema-request.json
         example: !include test-request.json
     responses:
       201:
         body:
           application/json:
+            schema: !include test-schema-response.json
             example: !include test-response.json

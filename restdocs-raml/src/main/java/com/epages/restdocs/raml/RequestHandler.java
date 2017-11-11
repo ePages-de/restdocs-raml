@@ -12,23 +12,22 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.RequestFieldsSnippet;
 import org.springframework.util.StringUtils;
 
-public class RequestHandler extends AbstractFieldHandler {
+public class RequestHandler implements OperationHandler, FileNameTrait {
 
-    static final String REQUEST_BODY_FILE_NAME_SUFFIX = "-request.json";
-
-    @Override
     public Map<String, Object> generateModel(Operation operation, RamlResourceSnippetParameters parameters) {
         final OperationRequest request = operation.getRequest();
 
         if (!StringUtils.isEmpty(request.getContentAsString())) {
             Map<String, Object> model = new HashMap<>();
-            model.put("requestBodyFileName", getRequestFileName(operation));
+            model.put("requestBodyFileName", getRequestFileName(operation.getName()));
             model.put("requestBodyPresent", true);
             model.put("contentTypeRequest", request.getHeaders().getContentType().getType() + "/" + request.getHeaders().getContentType().getSubtype());
             if (!parameters.getRequestFieldDescriptors().isEmpty()) {
                 validateRequestFieldsAndInferTypeInformation(operation, parameters);
-                model.put("requestFields", transformDescriptorsToModel(parameters.getRequestFieldDescriptors()));
                 model.put("requestFieldsPresent", true);
+                if (shouldGenerateRequestSchemaFile(operation, parameters)) {
+                    model.put("requestSchemaFileName", getRequestSchemaFileName(operation.getName()));
+                }
             }
             return model;
         }
@@ -37,10 +36,6 @@ public class RequestHandler extends AbstractFieldHandler {
 
     private void validateRequestFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {
         new RequestFieldsSnippetWrapper(parameters.getRequestFieldDescriptors()).validateFieldsAndInferTypeInformation(operation);
-    }
-
-    private String getRequestFileName(Operation operation) {
-        return operation.getName() + REQUEST_BODY_FILE_NAME_SUFFIX;
     }
 
     /**

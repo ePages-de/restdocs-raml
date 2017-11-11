@@ -1,6 +1,6 @@
 package com.epages.restdocs.raml;
 
-public class RamlResourceDocumentation {
+public abstract class RamlResourceDocumentation {
 
     public static RamlResourceSnippet ramlResource(RamlResourceSnippetParameters ramlResourceSnippetParameters) {
         return new RamlResourceSnippet(ramlResourceSnippetParameters);

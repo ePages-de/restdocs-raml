@@ -6,6 +6,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -63,7 +65,6 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     @Test
     @SneakyThrows
     public void should_document_request() {
-
         givenEndpointInvoked();
 
         whenRamlResourceSnippetDocumentedWithoutParameters();
@@ -73,11 +74,42 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         then(generatedResponseJsonFile()).exists();
     }
 
+    @Test
+    @SneakyThrows
+    public void should_document_request_with_fields() {
+        givenEndpointInvoked();
+
+        whenRamlResourceSnippetDocumentedWithRequestAndResponseFields();
+
+        then(generatedRamlFragmentFile()).exists();
+        then(generatedRequestJsonFile()).exists();
+        then(generatedResponseJsonFile()).exists();
+
+        then(generatedRequestSchemaFile()).exists();
+        then(generatedResponseSchemaFile()).exists();
+    }
+
     private void whenRamlResourceSnippetDocumentedWithoutParameters() throws Exception {
         resultActions
                 .andDo(
                         document(operationName, ramlResource())
                 );
+    }
+
+    private void whenRamlResourceSnippetDocumentedWithRequestAndResponseFields() throws Exception {
+        resultActions
+                .andDo(
+                        document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
+                                .requestFieldDescriptors(fieldDescriptors())
+                                .responseFieldDescriptors(fieldDescriptors())
+                                .build()))
+                );
+    }
+
+    private FieldDescriptor[] fieldDescriptors() {
+        return new FieldDescriptor[]{fieldWithPath("comment").description("the comment"),
+                fieldWithPath("flag").description("the flag"),
+                fieldWithPath("count").description("the count")};
     }
 
     private void givenEndpointInvoked() throws Exception {

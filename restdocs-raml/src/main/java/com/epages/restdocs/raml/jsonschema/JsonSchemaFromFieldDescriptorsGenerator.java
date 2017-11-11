@@ -29,8 +29,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonSchemaFromFieldDescriptorsGenerator {
 
 
-    public String generateSchema(String title, List<FieldDescriptor> fieldDescriptors) {
+    public String generateSchema(List<FieldDescriptor> fieldDescriptors) {
+        return generateSchema(fieldDescriptors, null);
+    }
 
+    public String generateSchema(List<FieldDescriptor> fieldDescriptors, String title) {
         List<JsonFieldPath> jsonFieldPaths = fieldDescriptors.stream().map(JsonFieldPath::compile).collect(toList());
 
         Schema schema = traverse(emptyList(), jsonFieldPaths, (ObjectSchema.Builder) ObjectSchema.builder().title(title));
