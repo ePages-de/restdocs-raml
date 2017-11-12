@@ -1,4 +1,4 @@
 include 'restdocs-raml'
-include 'restdocs-gradle-plugin'
+include 'restdocs-raml-gradle-plugin'
 
 rootProject.name = 'restdocs-raml-parent'
