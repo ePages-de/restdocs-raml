@@ -162,7 +162,7 @@ public class ApiDocumentation {
 			.andReturn().getResponse().getHeader("Location");
 		
 		this.mockMvc
-			.perform(get(noteLocation))
+			.perform(get("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("title", is(note.get("title"))))
 			.andExpect(jsonPath("body", is(note.get("body"))))
@@ -253,27 +253,25 @@ public class ApiDocumentation {
 			.andReturn().getResponse().getHeader("Location");
 
 		Map<String, Object> noteUpdate = new HashMap<String, Object>();
-		noteUpdate.put("tags", Arrays.asList(tagLocation));
-
-		ConstrainedFields fields = new ConstrainedFields(NotePatchInput.class);
+		noteUpdate.put("tags", singletonList(tagLocation));
 
 		this.mockMvc
-			.perform(patch(noteLocation)
+			.perform(patch("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/")))
 				.contentType(MediaTypes.HAL_JSON)
 				.content(this.objectMapper.writeValueAsString(noteUpdate)))
 			.andExpect(status().isNoContent())
 				.andDo(document("tags-patch",
 						ramlResource(RamlResourceSnippetParameters.builder().
 								requestFields(
-										fields.withPath("title")
+										fieldWithPath("title")
 												.description("The title of the note")
 												.type(JsonFieldType.STRING)
 												.optional(),
-										fields.withPath("body")
+										fieldWithPath("body")
 												.description("The body of the note")
 												.type(JsonFieldType.STRING)
 												.optional(),
-										fields.withPath("tags")
+										fieldWithPath("tags")
 												.description("An array of tag resource URIs"))
 								.build()))
 			);
@@ -292,7 +290,7 @@ public class ApiDocumentation {
 			.andReturn().getResponse().getHeader("Location");
 
 		this.mockMvc
-			.perform(get(tagLocation))
+			.perform(get("/tags/{id}", tagLocation.substring(tagLocation.lastIndexOf("/"))))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("name", is(tag.get("name"))))
 			.andDo(document("tags-get",
@@ -322,17 +320,15 @@ public class ApiDocumentation {
 		Map<String, Object> tagUpdate = new HashMap<String, Object>();
 		tagUpdate.put("name", "RESTful");
 
-		ConstrainedFields fields = new ConstrainedFields(TagPatchInput.class);
-		
 		this.mockMvc
-			.perform(patch(tagLocation)
+			.perform(patch("/tags/{id}", tagLocation.substring(tagLocation.lastIndexOf("/")))
 				.contentType(MediaTypes.HAL_JSON)
 				.content(this.objectMapper.writeValueAsString(tagUpdate)))
 			.andExpect(status().isNoContent())
 				.andDo(document("tags-patch",
 						ramlResource(RamlResourceSnippetParameters.builder().
 								requestFields(
-										fields.withPath("name").description("The name of the tag"))
+										fieldWithPath("name").description("The name of the tag"))
 								.build()))
 				);
 	}
