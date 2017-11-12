@@ -22,7 +22,7 @@ public class RequestHandler implements OperationHandler, FileNameTrait {
             model.put("requestBodyFileName", getRequestFileName(operation.getName()));
             model.put("requestBodyPresent", true);
             model.put("contentTypeRequest", request.getHeaders().getContentType().getType() + "/" + request.getHeaders().getContentType().getSubtype());
-            if (!parameters.getRequestFieldDescriptors().isEmpty()) {
+            if (!parameters.getRequestFields().isEmpty()) {
                 validateRequestFieldsAndInferTypeInformation(operation, parameters);
                 model.put("requestFieldsPresent", true);
                 if (shouldGenerateRequestSchemaFile(operation, parameters)) {
@@ -35,7 +35,7 @@ public class RequestHandler implements OperationHandler, FileNameTrait {
     }
 
     private void validateRequestFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {
-        new RequestFieldsSnippetWrapper(parameters.getRequestFieldDescriptors()).validateFieldsAndInferTypeInformation(operation);
+        new RequestFieldsSnippetWrapper(parameters.getRequestFields()).validateFieldsAndInferTypeInformation(operation);
     }
 
     /**

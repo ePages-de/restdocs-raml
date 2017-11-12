@@ -100,8 +100,8 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         resultActions
                 .andDo(
                         document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
-                                .requestFieldDescriptors(fieldDescriptors())
-                                .responseFieldDescriptors(fieldDescriptors())
+                                .requestFields(fieldDescriptors())
+                                .responseFields(fieldDescriptors())
                                 .build()))
                 );
     }

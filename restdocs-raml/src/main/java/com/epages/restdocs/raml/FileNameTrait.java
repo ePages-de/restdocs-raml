@@ -20,7 +20,7 @@ public interface FileNameTrait {
     }
 
     default boolean shouldGenerateRequestSchemaFile(Operation operation, RamlResourceSnippetParameters ramlResourceSnippetParameters) {
-        return !StringUtils.isEmpty(operation.getRequest().getContentAsString()) && !ramlResourceSnippetParameters.getRequestFieldDescriptors().isEmpty();
+        return !StringUtils.isEmpty(operation.getRequest().getContentAsString()) && !ramlResourceSnippetParameters.getRequestFields().isEmpty();
     }
 
     default String getRequestSchemaFileName(String operationName) {
@@ -28,7 +28,7 @@ public interface FileNameTrait {
     }
 
     default boolean shouldGenerateResponseSchemaFile(Operation operation, RamlResourceSnippetParameters ramlResourceSnippetParameters) {
-        return !StringUtils.isEmpty(operation.getResponse().getContentAsString()) && !ramlResourceSnippetParameters.getResponseFieldDescriptors().isEmpty();
+        return !StringUtils.isEmpty(operation.getResponse().getContentAsString()) && !ramlResourceSnippetParameters.getResponseFields().isEmpty();
     }
 
     default String getResponseSchemaFileName(String operationName) {

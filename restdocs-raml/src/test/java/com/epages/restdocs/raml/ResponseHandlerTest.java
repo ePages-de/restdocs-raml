@@ -69,7 +69,7 @@ public class ResponseHandlerTest {
     }
     private void whenModelGeneratedWithFieldDescriptors(FieldDescriptor... fieldDescriptors) {
         model = responseHandler.generateModel(operation, RamlResourceSnippetParameters.builder()
-                .responseFieldDescriptors(fieldDescriptors)
+                .responseFields(fieldDescriptors)
                 .build());
     }
 

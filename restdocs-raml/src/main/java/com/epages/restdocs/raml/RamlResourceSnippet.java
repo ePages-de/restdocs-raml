@@ -71,14 +71,14 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
     private void storeRequestJsonSchema(Operation operation) {
         if (shouldGenerateRequestSchemaFile(operation, parameters)) {
             storeFile(operation, getRequestSchemaFileName(operation.getName()),
-                    jsonSchemasGenerator.generateSchema(parameters.getRequestFieldDescriptors()));
+                    jsonSchemasGenerator.generateSchema(parameters.getRequestFields()));
         }
     }
 
     private void storeResponseJsonSchema(Operation operation) {
         if (shouldGenerateResponseSchemaFile(operation, parameters)) {
             storeFile(operation, getResponseSchemaFileName(operation.getName()),
-                    jsonSchemasGenerator.generateSchema(parameters.getResponseFieldDescriptors()));
+                    jsonSchemasGenerator.generateSchema(parameters.getResponseFields()));
         }
     }
     private void storeRequestBody(Operation operation) {

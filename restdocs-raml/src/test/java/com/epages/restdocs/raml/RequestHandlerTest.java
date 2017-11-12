@@ -69,7 +69,7 @@ public class RequestHandlerTest {
     }
     private void whenModelGeneratedWithFieldDescriptors(FieldDescriptor... fieldDescriptors) {
         model = requestHandler.generateModel(operation, RamlResourceSnippetParameters.builder()
-                .requestFieldDescriptors(fieldDescriptors)
+                .requestFields(fieldDescriptors)
                 .build());
     }
 

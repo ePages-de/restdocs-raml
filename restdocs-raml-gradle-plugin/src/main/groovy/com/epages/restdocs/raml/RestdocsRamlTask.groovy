@@ -2,6 +2,7 @@ package com.epages.restdocs.raml
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
@@ -11,18 +12,21 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 class RestdocsRamlTask extends DefaultTask {
 
+    @Input
     Property<String> ramlVersion = project.objects.property(String)
+    @Input
     Property<String> apiBaseUri = project.objects.property(String)
+    @Input
     Property<String> apiTitle = project.objects.property(String)
-
+    @Input
     Property<String> outputDirectory
-
+    @Input
     Property<String> snippetsDirectory
 
     static String version08 = "#%RAML 0.8"
     static String version10 = "#%RAML 1.0"
 
-    String outputFileNamePrefix = "api"
+    private String outputFileNamePrefix = "api"
 
     File getOutputDirectory() {
         project.file(outputDirectory)

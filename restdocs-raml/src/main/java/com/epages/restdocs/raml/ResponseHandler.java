@@ -23,7 +23,7 @@ public class ResponseHandler implements OperationHandler, FileNameTrait {
             model.put("responseBodyFileName", getResponseFileName(operation.getName()));
             model.put("responseBodyPresent", true);
             model.put("contentTypeResponse", response.getHeaders().getContentType().getType() + "/" + response.getHeaders().getContentType().getSubtype());
-            if (!parameters.getResponseFieldDescriptors().isEmpty()) {
+            if (!parameters.getResponseFields().isEmpty()) {
                 validateResponseFieldsAndInferTypeInformation(operation, parameters);
                 model.put("responseFieldsPresent", true);
                 if (shouldGenerateResponseSchemaFile(operation, parameters)) {
@@ -36,7 +36,7 @@ public class ResponseHandler implements OperationHandler, FileNameTrait {
     }
 
     private void validateResponseFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {
-        new ResponseFieldsSnippetWrapper(parameters.getResponseFieldDescriptors()).validateFieldsAndInferTypeInformation(operation);
+        new ResponseFieldsSnippetWrapper(parameters.getResponseFields()).validateFieldsAndInferTypeInformation(operation);
     }
 
     /**

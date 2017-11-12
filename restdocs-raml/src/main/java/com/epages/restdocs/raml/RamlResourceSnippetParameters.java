@@ -16,21 +16,21 @@ public class RamlResourceSnippetParameters {
 
     private final String description;
     private final boolean privateResource;
-    private final List<FieldDescriptor> requestFieldDescriptors;
-    private final List<FieldDescriptor> responseFieldDescriptors;
+    private final List<FieldDescriptor> requestFields;
+    private final List<FieldDescriptor> responseFields;
 
     public static class RamlResourceSnippetParametersBuilder {
 
-        private List<FieldDescriptor> requestFieldDescriptors = emptyList();
-        private List<FieldDescriptor> responseFieldDescriptors = emptyList();
+        private List<FieldDescriptor> requestFields = emptyList();
+        private List<FieldDescriptor> responseFields = emptyList();
 
-        public RamlResourceSnippetParametersBuilder requestFieldDescriptors(FieldDescriptor... requestFieldDescriptors) {
-            this.requestFieldDescriptors = Arrays.asList(requestFieldDescriptors);
+        public RamlResourceSnippetParametersBuilder requestFields(FieldDescriptor... requestFields) {
+            this.requestFields = Arrays.asList(requestFields);
             return this;
         }
 
-        public RamlResourceSnippetParametersBuilder responseFieldDescriptors(FieldDescriptor... responseFieldDescriptors) {
-            this.responseFieldDescriptors = Arrays.asList(responseFieldDescriptors);
+        public RamlResourceSnippetParametersBuilder responseFields(FieldDescriptor... responseFields) {
+            this.responseFields = Arrays.asList(responseFields);
             return this;
         }
     }

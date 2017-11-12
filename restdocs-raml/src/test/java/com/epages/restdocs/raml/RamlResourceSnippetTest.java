@@ -155,8 +155,8 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     private void whenRamlSnippetInvoked() throws IOException {
         ramlResource(RamlResourceSnippetParameters.builder()
                 .description("some resource")
-                .requestFieldDescriptors(requestFieldDescriptors.toArray(new FieldDescriptor[0]))
-                .responseFieldDescriptors(responseFieldDescriptors.toArray(new FieldDescriptor[0]))
+                .requestFields(requestFieldDescriptors.toArray(new FieldDescriptor[0]))
+                .responseFields(responseFieldDescriptors.toArray(new FieldDescriptor[0]))
                 .build()).document(operation);
     }
 }
