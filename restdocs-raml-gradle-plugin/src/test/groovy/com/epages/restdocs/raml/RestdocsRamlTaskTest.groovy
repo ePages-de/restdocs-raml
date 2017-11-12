@@ -76,6 +76,9 @@ class RestdocsRamlTaskTest extends Specification {
                 .withProjectDir(testProjectDir.root)
                 .build()
         project.pluginManager.apply 'com.epages.restdocs-raml'
+        project.extensions.ramldoc.ramlVersion = "0.8"
+        project.extensions.ramldoc.apiTitle = "mytitle"
+        project.extensions.ramldoc.apiBaseUri = "http://localhost/api"
         restdocsRamlTask = project.tasks.ramldoc as RestdocsRamlTask
     }
 }

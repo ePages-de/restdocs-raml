@@ -11,16 +11,8 @@ public interface FileNameTrait {
 
     String SCHEMA_PART = "-schema";
 
-    default boolean shouldGenerateRequestFile(Operation operation) {
-        return !StringUtils.isEmpty(operation.getRequest().getContentAsString());
-    }
-
     default String getRequestFileName(String operationName) {
         return operationName + REQUEST_FILE_NAME_SUFFIX;
-    }
-
-    default boolean shouldGenerateResponseFile(Operation operation) {
-        return !StringUtils.isEmpty(operation.getResponse().getContentAsString());
     }
 
     default String getResponseFileName(String operationName) {

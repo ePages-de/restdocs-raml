@@ -1,6 +1,7 @@
 package com.epages.restdocs.raml
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
@@ -10,11 +11,16 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 
 class RestdocsRamlTask extends DefaultTask {
 
-    String outputDirectory
+    Property<String> ramlVersion = project.objects.property(String)
+    Property<String> apiBaseUri = project.objects.property(String)
+    Property<String> apiTitle = project.objects.property(String)
 
-    String snippetsDirectory
+    Property<String> outputDirectory
 
-    String ramlVersion = "#%RAML 0.8"
+    Property<String> snippetsDirectory
+
+    static String version08 = "#%RAML 0.8"
+    static String version10 = "#%RAML 1.0"
 
     String outputFileNamePrefix = "api"
 
@@ -51,7 +57,7 @@ class RestdocsRamlTask extends DefaultTask {
         def groupedFragments = ramlFragments.groupByFirstPathPart(ignorePrivate)
 
         writeGroupFiles(groupedFragments, getOutputDirectory(), ignorePrivate)
-        def aggregateFileName = ignorePrivate ? "$outputDirectory/${outputFileNamePrefix}-public.raml" : "$outputDirectory/${outputFileNamePrefix}.raml"
+        def aggregateFileName = ignorePrivate ? "${outputDirectory.get()}/${outputFileNamePrefix}-public.raml" : "${outputDirectory.get()}/${outputFileNamePrefix}.raml"
         writeAggregateFile(groupedFragments, project.file(aggregateFileName), ignorePrivate)
     }
 
@@ -72,9 +78,15 @@ class RestdocsRamlTask extends DefaultTask {
 
     def writeAggregateFile(List<RamlFragments> ramlFragmentsList, File outputFile, boolean ignorePrivate) {
         outputFile.withWriter('utf-8') { writer ->
-            writer.write(ramlVersion + "\n")
-            writer.write("title: <TODO service name here> API\n")
-            writer.write("baseUri: https://md.beyondshop.cloud/api\n")
+
+            def ramlVersionString = ramlVersion.get() == "0.8" ? version08 : version10
+            writer.write("$ramlVersionString\n")
+            if (apiTitle.isPresent()) {
+                writer.write("title: ${apiTitle.get()}\n")
+            }
+            if (apiBaseUri.isPresent()) {
+                writer.write("baseUri: ${apiBaseUri.get()}\n")
+            }
             ramlFragmentsList.each { fragments ->
                 writer.write("${fragments.commonPath}: !include ${fragments.getGroupFileName(ignorePrivate)}\n")
             }

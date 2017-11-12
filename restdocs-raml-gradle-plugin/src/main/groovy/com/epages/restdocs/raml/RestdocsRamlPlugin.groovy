@@ -5,14 +5,20 @@ import org.gradle.api.Project
 
 class RestdocsRamlPlugin implements Plugin<Project> {
 
-    def outputDir = 'build/ramldoc/'
-
     @Override
     void apply(Project project) {
+        def extension = project.extensions.create('ramldoc', RestdocsRamlPluginExtension, project)
+
+
         project.task("ramldoc", type: RestdocsRamlTask, dependsOn: 'check') {
             description = 'aggregate raml fragments into a service raml'
-            outputDirectory = "build/ramldoc"
-            snippetsDirectory = "build/generated-snippets"
+
+            ramlVersion = extension.ramlVersion
+            apiBaseUri = extension.apiBaseUri
+            apiTitle = extension.apiTitle
+
+            outputDirectory = extension.outputDirectory
+            snippetsDirectory = extension.snippetsDirectory
         }
     }
 }
