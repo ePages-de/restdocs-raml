@@ -1,6 +1,7 @@
 package com.epages.restdocs.raml;
 
 import static java.util.Collections.singletonList;
+import static org.springframework.restdocs.config.SnippetConfigurer.DEFAULT_SNIPPET_ENCODING;
 import static org.springframework.restdocs.generate.RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE;
 
 import java.io.File;
@@ -15,7 +16,14 @@ import java.util.Map;
 
 import org.springframework.restdocs.RestDocumentationContext;
 import org.springframework.restdocs.operation.Operation;
+import org.springframework.restdocs.snippet.RestDocumentationContextPlaceholderResolverFactory;
+import org.springframework.restdocs.snippet.StandardWriterResolver;
 import org.springframework.restdocs.snippet.TemplatedSnippet;
+import org.springframework.restdocs.snippet.WriterResolver;
+import org.springframework.restdocs.templates.StandardTemplateResourceResolver;
+import org.springframework.restdocs.templates.TemplateEngine;
+import org.springframework.restdocs.templates.TemplateFormat;
+import org.springframework.restdocs.templates.mustache.MustacheTemplateEngine;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -57,7 +65,7 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
 
     @Override
     public void document(Operation operation) throws IOException {
-        super.document(operation);
+        documentSnippet(operation);
 
         storeRequestBody(operation);
 
@@ -66,6 +74,19 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
         storeRequestJsonSchema(operation);
 
         storeResponseJsonSchema(operation);
+    }
+
+    private void documentSnippet(Operation operation) throws IOException {
+        RestDocumentationContext context = (RestDocumentationContext) operation
+                .getAttributes().get(RestDocumentationContext.class.getName());
+
+        WriterResolver writerResolver = new StandardWriterResolver(new RestDocumentationContextPlaceholderResolverFactory(), DEFAULT_SNIPPET_ENCODING, new RamlTemplateFormat());
+        try (Writer writer = writerResolver.resolve(operation.getName(), SNIPPET_NAME,
+                context)) {
+            Map<String, Object> model = createModel(operation);
+            TemplateEngine templateEngine = new MustacheTemplateEngine(new StandardTemplateResourceResolver(new RamlTemplateFormat()));
+            writer.append(templateEngine.compileTemplate(SNIPPET_NAME).render(model));
+        }
     }
 
     private void storeRequestJsonSchema(Operation operation) {
@@ -108,5 +129,18 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
 
     private String getUriPath(Operation operation) {
         return UriComponentsBuilder.fromUriString(((String) operation.getAttributes().get(ATTRIBUTE_NAME_URL_TEMPLATE))).build().getPath();
+    }
+
+    static class RamlTemplateFormat implements TemplateFormat {
+
+        @Override
+        public String getId() {
+            return "raml";
+        }
+
+        @Override
+        public String getFileExtension() {
+            return "raml";
+        }
     }
 }

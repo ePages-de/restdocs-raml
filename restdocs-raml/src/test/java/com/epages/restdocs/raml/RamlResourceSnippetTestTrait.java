@@ -4,7 +4,7 @@ import java.io.File;
 
 public interface RamlResourceSnippetTestTrait {
 
-    String RAML_FRAGMENT_FILE = "raml-resource.adoc";
+    String RAML_FRAGMENT_FILE = "raml-resource.raml";
     String REQUEST_FILE_SUFFIX = "-request.json";
     String RESPONSE_FILE_SUFFIX = "-response.json";
     String SCHEMA_PART = "-schema";
