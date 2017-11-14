@@ -19,16 +19,17 @@ public interface FileNameTrait {
         return operationName + RESPONSE_FILE_NAME_SUFFIX;
     }
 
-    default boolean shouldGenerateRequestSchemaFile(Operation operation, RamlResourceSnippetParameters ramlResourceSnippetParameters) {
-        return !StringUtils.isEmpty(operation.getRequest().getContentAsString()) && !ramlResourceSnippetParameters.getRequestFields().isEmpty();
+    default boolean shouldGenerateRequestSchemaFile(Operation operation, RamlResourceSnippetParameters parameters) {
+        return !StringUtils.isEmpty(operation.getRequest().getContentAsString()) && !parameters.getRequestFields().isEmpty();
     }
 
     default String getRequestSchemaFileName(String operationName) {
         return operationName + SCHEMA_PART + REQUEST_FILE_NAME_SUFFIX;
     }
 
-    default boolean shouldGenerateResponseSchemaFile(Operation operation, RamlResourceSnippetParameters ramlResourceSnippetParameters) {
-        return !StringUtils.isEmpty(operation.getResponse().getContentAsString()) && !ramlResourceSnippetParameters.getResponseFields().isEmpty();
+    default boolean shouldGenerateResponseSchemaFile(Operation operation, RamlResourceSnippetParameters parameters) {
+        return !StringUtils.isEmpty(operation.getResponse().getContentAsString())
+                && !(parameters.getResponseFields().isEmpty() && parameters.getLinks().isEmpty());
     }
 
     default String getResponseSchemaFileName(String operationName) {

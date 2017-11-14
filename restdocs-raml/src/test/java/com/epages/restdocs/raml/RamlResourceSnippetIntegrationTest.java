@@ -2,7 +2,10 @@ package com.epages.restdocs.raml;
 
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -20,9 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -100,16 +103,19 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         resultActions
                 .andDo(
                         document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
-                                .requestFields(fieldDescriptors())
-                                .responseFields(fieldDescriptors())
+                                .requestFields(
+                                        fieldDescriptors())
+                                .links(linkWithRel("self"))
                                 .build()))
                 );
     }
 
-    private FieldDescriptor[] fieldDescriptors() {
-        return new FieldDescriptor[]{fieldWithPath("comment").description("the comment"),
+    private FieldDescriptors fieldDescriptors() {
+        return new FieldDescriptors(
+                fieldWithPath("comment").description("the comment"),
                 fieldWithPath("flag").description("the flag"),
-                fieldWithPath("count").description("the count")};
+                fieldWithPath("count").description("the count")
+        );
     }
 
     private void givenEndpointInvoked() throws Exception {
@@ -144,9 +150,11 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     static class TestController {
 
         @PostMapping(path = "/some/{id}")
-        public ResponseEntity<TestDateHolder> doSomething(@PathVariable String id,
-                                                          @RequestBody TestDateHolder testDateHolder) {
-            return ResponseEntity.ok(testDateHolder);
+        public ResponseEntity<Resource<TestDateHolder>> doSomething(@PathVariable String id,
+                                                                   @RequestBody TestDateHolder testDateHolder) {
+            Resource<TestDateHolder> resource = new Resource<>(testDateHolder);
+            resource.add(linkTo(methodOn(TestController.class).doSomething(id, null)).withSelfRel());
+            return ResponseEntity.ok(resource);
         }
     }
 

@@ -36,7 +36,7 @@ public class ResponseHandler implements OperationHandler, FileNameTrait {
     }
 
     private void validateResponseFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {
-        new ResponseFieldsSnippetWrapper(parameters.getResponseFields()).validateFieldsAndInferTypeInformation(operation);
+        new ResponseFieldsSnippetWrapper(parameters.getResponseFieldsWithLinks()).validateFieldsAndInferTypeInformation(operation);
     }
 
     /**

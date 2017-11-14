@@ -16,10 +16,13 @@
 
 package com.example.notes;
 
+import static com.epages.restdocs.raml.RamlResourceDocumentation.fields;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -30,8 +33,8 @@ import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Before;
@@ -47,6 +50,7 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -73,7 +77,14 @@ public class ApiDocumentation {
 	@Autowired
 	private WebApplicationContext context;
 
+	private ConstrainedFields noteFields = new ConstrainedFields(NoteInput.class);
+
 	private MockMvc mockMvc;
+	private HashMap<String, String> tag;
+	private String tagLocation;
+	private ResultActions resultActions;
+	private Map<String, Object> note;
+	private String noteLocation;
 
 	@Before
 	public void setUp() {
@@ -81,20 +92,20 @@ public class ApiDocumentation {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
 			.apply(documentationConfiguration(this.restDocumentation))
 			.build();
+
+		this.noteRepository.deleteAll();
+		this.tagRepository.deleteAll();
 	}
 
 	@Test
 	public void notesListExample() throws Exception {
-		this.noteRepository.deleteAll();
-
 		createNote("REST maturity model", "http://martinfowler.com/articles/richardsonMaturityModel.html");
 		createNote("Hypertext Application Language (HAL)", "http://stateless.co/hal_specification.html");
 		createNote("Application-Level Profile Semantics (ALPS)", "http://alps.io/spec/");
-		
-		this.mockMvc
-			.perform(get("/notes"))
-			.andExpect(status().isOk())
-			.andDo(document("notes-list",
+
+		whenNotesRetrieved();
+
+		resultActions.andDo(document("notes-list",
 				ramlResource(RamlResourceSnippetParameters.builder()
 						.responseFields(
 								fieldWithPath("_embedded.notes").description("An array of <<resources-note, Note resources>>")
@@ -104,71 +115,32 @@ public class ApiDocumentation {
 
 	@Test
 	public void notesCreateExample() throws Exception {
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
+		givenTag();
 
-		String tagLocation = this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
+		givenNoteRequest(singletonList(tagLocation));
 
-		Map<String, Object> note = new HashMap<String, Object>();
-		note.put("title", "REST maturity model");
-		note.put("body", "http://martinfowler.com/articles/richardsonMaturityModel.html");
-		note.put("tags", singletonList(tagLocation));
+		whenNoteCreated();
 
-		ConstrainedFields fields = new ConstrainedFields(NoteInput.class);
-
-		this.mockMvc
-				.perform(post("/notes")
-						.contentType(MediaTypes.HAL_JSON)
-						.content(this.objectMapper.writeValueAsString(note)))
-				.andExpect(
-						status().isCreated())
+		resultActions
 				.andDo(document("notes-create",
 						ramlResource(RamlResourceSnippetParameters.builder()
 								.requestFields(
-										fields.withPath("title").description("The title of the note"),
-										fields.withPath("body").description("The body of the note"),
-										fields.withPath("tags").description("An array of tag resource URIs"))
+										noteFields.withPath("title").description("The title of the note"),
+										noteFields.withPath("body").description("The body of the note"),
+										noteFields.withPath("tags").description("An array of tag resource URIs"))
 								.build()))
 				);
 	}
 
 	@Test
 	public void noteGetExample() throws Exception {
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
+		givenTag();
 
-		String tagLocation = this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
+		givenNote();
 
-		Map<String, Object> note = new HashMap<String, Object>();
-		note.put("title", "REST maturity model");
-		note.put("body", "http://martinfowler.com/articles/richardsonMaturityModel.html");
-		note.put("tags", Arrays.asList(tagLocation));
+		whenNoteIsRetrieved();
 
-		String noteLocation = this.mockMvc
-			.perform(post("/notes")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(note)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
-		
-		this.mockMvc
-			.perform(get("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/"))))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("title", is(note.get("title"))))
-			.andExpect(jsonPath("body", is(note.get("body"))))
-			.andExpect(jsonPath("_links.self.href", is(noteLocation)))
-			.andExpect(jsonPath("_links.note-tags", is(notNullValue())))
-			.andDo(document("notes-get",
+		resultActions.andDo(document("notes-get",
 				//links(
 				//	linkWithRel("self").description("This <<resources-note,note>>"),
 				//	linkWithRel("note-tags").description("This note's <<resources-note-tags,tags>>")),
@@ -176,64 +148,44 @@ public class ApiDocumentation {
 							.responseFields(
 									fieldWithPath("title").description("The title of the note"),
 									fieldWithPath("body").description("The body of the note"),
-									fieldWithPath("_links").description("<<resources-note-links,Links>> to other resources"))
+									fieldWithPath("_links").description("Links to other resources"))
 							.build()))
 			);
-
 	}
 
 	@Test
 	public void tagsListExample() throws Exception {
-		this.noteRepository.deleteAll();
-		this.tagRepository.deleteAll();
+		givenTags();
 
-		createTag("REST");
-		createTag("Hypermedia");
-		createTag("HTTP");
-		
-		this.mockMvc
-			.perform(get("/tags"))
-			.andExpect(status().isOk())
-			.andDo(document("tags-list",
-					ramlResource(RamlResourceSnippetParameters.builder()
-							.responseFields(
-									fieldWithPath("_embedded.tags").description("An array of <<resources-tag,Tag resources>>"))
-							.build()))
-			);
+		whenTagsRetrieved();
+
+		resultActions.andDo(document("tags-list",
+				ramlResource(RamlResourceSnippetParameters.builder()
+						.responseFields(
+								fields(fieldWithPath("_embedded.tags").description("An array of tags"))
+										.andWithPrefix("_embedded.tags[].", tagFields()))
+						.build()))
+		);
 	}
 
 	@Test
 	public void tagsCreateExample() throws Exception {
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
+		givenTagRequest();
 
 		ConstrainedFields fields = new ConstrainedFields(TagInput.class);
-		
-		this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andDo(document("tags-create",
-					ramlResource(RamlResourceSnippetParameters.builder().
-							requestFields(
-									fields.withPath("name").description("The name of the tag"))
-							.build())));
+
+		whenTagsCreated();
+
+		resultActions.andDo(document("tags-create",
+				ramlResource(RamlResourceSnippetParameters.builder().
+						requestFields(
+								fields.withPath("name").description("The name of the tag"))
+						.build())));
 	}
 
 	@Test
 	public void noteUpdateExample() throws Exception {
-		Map<String, Object> note = new HashMap<String, Object>();
-		note.put("title", "REST maturity model");
-		note.put("body", "http://martinfowler.com/articles/richardsonMaturityModel.html");
-
-		String noteLocation = this.mockMvc
-			.perform(post("/notes")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(note)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
-
+		givenNote();
 		this.mockMvc
 			.perform(get(noteLocation))
 			.andExpect(status().isOk())
@@ -242,25 +194,14 @@ public class ApiDocumentation {
 			.andExpect(jsonPath("_links.self.href", is(noteLocation)))
 			.andExpect(jsonPath("_links.note-tags", is(notNullValue())));
 
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
+		givenTag();
 
-		String tagLocation = this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
-
-		Map<String, Object> noteUpdate = new HashMap<String, Object>();
+		Map<String, Object> noteUpdate = new HashMap<>();
 		noteUpdate.put("tags", singletonList(tagLocation));
 
-		this.mockMvc
-			.perform(patch("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/")))
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(noteUpdate)))
-			.andExpect(status().isNoContent())
-				.andDo(document("tags-patch",
+		whenNoteUpdated(noteUpdate);
+
+		resultActions.andDo(document("tags-patch",
 						ramlResource(RamlResourceSnippetParameters.builder().
 								requestFields(
 										fieldWithPath("title")
@@ -279,58 +220,135 @@ public class ApiDocumentation {
 
 	@Test
 	public void tagGetExample() throws Exception {
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
+		givenTag();
 
-		String tagLocation = this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
+		whenTagRetrieved();
 
-		this.mockMvc
-			.perform(get("/tags/{id}", tagLocation.substring(tagLocation.lastIndexOf("/"))))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("name", is(tag.get("name"))))
-			.andDo(document("tags-get",
-				//links(
-				//	linkWithRel("self").description("This <<resources-tag,tag>>"),
-				//	linkWithRel("tagged-notes").description("The <<resources-tagged-notes,notes>> that have this tag")),
-					ramlResource(RamlResourceSnippetParameters.builder()
-							.responseFields(
-									fieldWithPath("name").description("The name of the tag"),
-									fieldWithPath("_links").description("<<resources-tag-links,Links>> to other resources"))
-							.build()))
-			);
+		resultActions.andDo(document("tags-get",
+				ramlResource(RamlResourceSnippetParameters.builder()
+						.responseFields(
+								tagFields())
+						.links(
+								linkWithRel("self").description("Link to this tag"),
+								linkWithRel("tagged-notes").description("The resources that have this tag"))
+						.build()))
+		);
+	}
+
+	private FieldDescriptor tagFields() {
+		return fieldWithPath("name").description("The name of the tag");
 	}
 
 	@Test
 	public void tagUpdateExample() throws Exception {
-		Map<String, String> tag = new HashMap<String, String>();
-		tag.put("name", "REST");
-
-		String tagLocation = this.mockMvc
-			.perform(post("/tags")
-				.contentType(MediaTypes.HAL_JSON)
-				.content(this.objectMapper.writeValueAsString(tag)))
-			.andExpect(status().isCreated())
-			.andReturn().getResponse().getHeader("Location");
+		givenTag();
 
 		Map<String, Object> tagUpdate = new HashMap<String, Object>();
 		tagUpdate.put("name", "RESTful");
 
-		this.mockMvc
+		whenTagUpdated(tagUpdate);
+
+		resultActions.andDo(document("tags-patch",
+						ramlResource(RamlResourceSnippetParameters.builder().
+								requestFields(
+										tagFields())
+								.build()))
+				);
+	}
+
+	private void whenTagRetrieved() throws Exception {
+		resultActions = this.mockMvc
+				.perform(get("/tags/{id}", tagLocation.substring(tagLocation.lastIndexOf("/"))))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("name", is(tag.get("name"))));
+	}
+
+	private void whenNoteUpdated(Map<String, Object> noteUpdate) throws Exception {
+		resultActions = this.mockMvc
+				.perform(patch("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/")))
+						.contentType(MediaTypes.HAL_JSON)
+						.content(this.objectMapper.writeValueAsString(noteUpdate)))
+				.andExpect(status().isNoContent());
+	}
+
+	private void whenTagUpdated(Map<String, Object> tagUpdate) throws Exception {
+		resultActions = this.mockMvc
 			.perform(patch("/tags/{id}", tagLocation.substring(tagLocation.lastIndexOf("/")))
 				.contentType(MediaTypes.HAL_JSON)
 				.content(this.objectMapper.writeValueAsString(tagUpdate)))
-			.andExpect(status().isNoContent())
-				.andDo(document("tags-patch",
-						ramlResource(RamlResourceSnippetParameters.builder().
-								requestFields(
-										fieldWithPath("name").description("The name of the tag"))
-								.build()))
-				);
+			.andExpect(status().isNoContent());
+	}
+
+	private void whenTagsRetrieved() throws Exception {
+		resultActions = this.mockMvc
+				.perform(get("/tags"))
+				.andExpect(status().isOk());
+	}
+
+	private void givenTags() {
+		createTag("REST");
+		createTag("Hypermedia");
+		createTag("HTTP");
+	}
+
+	private void whenNoteIsRetrieved() throws Exception {
+		resultActions= this.mockMvc
+				.perform(get("/notes/{id}", noteLocation.substring(noteLocation.lastIndexOf("/"))))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("title", is(note.get("title"))))
+				.andExpect(jsonPath("body", is(note.get("body"))))
+				.andExpect(jsonPath("_links.self.href", is(noteLocation)))
+				.andExpect(jsonPath("_links.note-tags", is(notNullValue())));
+	}
+
+	private void givenNoteRequest(List<String> tags) {
+		note = new HashMap<>();
+		note.put("title", "REST maturity model");
+		note.put("body", "http://martinfowler.com/articles/richardsonMaturityModel.html");
+		if (!tags.isEmpty()) {
+			note.put("tags", tags);
+		}
+	}
+
+	private void whenNoteCreated() throws Exception {
+		resultActions = this.mockMvc
+				.perform(post("/notes")
+						.contentType(MediaTypes.HAL_JSON)
+						.content(this.objectMapper.writeValueAsString(note)))
+				.andExpect(status().isCreated());
+		noteLocation = resultActions.andReturn().getResponse().getHeader("Location");
+	}
+
+	private void whenTagsCreated() throws Exception {
+		resultActions = this.mockMvc
+				.perform(post("/tags")
+						.contentType(MediaTypes.HAL_JSON)
+						.content(this.objectMapper.writeValueAsString(tag)))
+				.andExpect(status().isCreated());
+
+		tagLocation = resultActions.andReturn().getResponse().getHeader("Location");
+	}
+
+	private void givenNote() throws Exception {
+		givenNoteRequest(tagLocation == null ? emptyList() : singletonList(tagLocation));
+		whenNoteCreated();
+	}
+
+	private void  whenNotesRetrieved() throws Exception {
+		resultActions = this.mockMvc
+				.perform(get("/notes"))
+				.andExpect(status().isOk());
+	}
+
+	private void givenTag() throws Exception {
+		givenTagRequest();
+
+		whenTagsCreated();
+	}
+
+	private void givenTagRequest() {
+		tag = new HashMap<String, String>();
+		tag.put("name", "REST");
 	}
 
 	private void createNote(String title, String body) {
