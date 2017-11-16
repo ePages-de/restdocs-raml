@@ -32,7 +32,7 @@ This is most importantly the [RamlResourceDocumentation](restdocs-raml/src/main/
 The snippet generates a RAML fragment for each documenated resource. 
 - [restdocs-raml-gradle-plugin](restdocs-raml-gradle-plugin) - adds a gradle plugin that aggregates the RAML fragment produced  by `RamlResourceSnippet` into one `RAML` file for the whole products.
 
-### Usage
+### Build configuration
 
 ```groovy
 buildscript {
@@ -78,9 +78,28 @@ ramldoc { //7
 
 See the [build.gradle](restdocs-raml-sample/build.gradle) for the setup used in the sample project.
 
+### Usage with Spring REST Docs
+
+The class [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) contains the entrypoint for using the [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java).
+
+The most basic form does not take and parameters:
+
+```java
+resultActions.andDo(document("notes-list", ramlResource()));
+```
+
+### Running the gradle plugin
+
+`restdocs-raml-gradle-plugin` is responsible for picking up the generated `RAML` fragments and aggregate them into a set of top-level `RAML` files that describe the complete API.
+For this purpose we use the `ramldoc` task:
+
+```
+./gradlew ramldoc
+```
+
 ### Gradle plugin configuration
 
-The `restdocs-raml-gradle-plugin` takes the following configuration options:
+The `restdocs-raml-gradle-plugin` takes the following configuration options - all are optional.
 
 Name | Description | Default value
 ---- | ----------- | -------------
