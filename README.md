@@ -1,8 +1,8 @@
 # Spring REST Docs RAML Integration
 
-![](https://img.shields.io/github/license/mduesterhoeft/restdocs-raml.svg?branch=master)
-[ ![Build Status](https://travis-ci.org/mduesterhoeft/restdocs-raml.svg)](https://travis-ci.org/mduesterhoeft/restdocs-raml)
-[ ![Coverage Status](https://coveralls.io/repos/github/mduesterhoeft/restdocs-raml/badge.svg?branch=master)](https://coveralls.io/r/mduesterhoeft/restdocs-raml)
+![](https://img.shields.io/github/license/ePages-de/restdocs-raml.svg?branch=master)
+[ ![Build Status](https://travis-ci.org/ePages-de/restdocs-raml.svg)](https://travis-ci.org/ePages-de/restdocs-raml)
+[ ![Coverage Status](https://coveralls.io/repos/github/ePages-de/restdocs-raml/badge.svg?branch=master)](https://coveralls.io/r/ePages-de/restdocs-raml)
 [ ![Download](https://api.bintray.com/packages/epages/maven/restdocs-raml/images/download.svg)](https://bintray.com/epages/maven/restdocs-raml/_latestVersion)
 
 This is an extension that adds [RAML (RESTful API Modeling Language)](https://raml.org) as an output format to [Spring REST Docs](https://projects.spring.io/spring-restdocs/).
