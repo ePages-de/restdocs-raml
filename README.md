@@ -85,7 +85,10 @@ The class [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/res
 The most basic form does not take and parameters:
 
 ```java
-resultActions.andDo(document("notes-list", ramlResource()));
+mockMvc
+  .perform(get("/notes"))
+  .andExpect(status().isOk())
+  .andDo(document("notes-list", ramlResource()));
 ```
 
 ### Running the gradle plugin
