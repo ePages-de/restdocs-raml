@@ -21,3 +21,18 @@ With RAML you get a machine-readable description of your API. There is a rich ec
 
 Also, RAML is supported by many REST clients like [Postman](https://www.getpostman.com) and [Paw](https://paw.cloud). Thus having a RAML representation of an API is a great plus when starting to work with it.
 
+## Getting started
+
+### Project structure
+
+The project consists of two components:
+
+- [restdocs-raml](restdocs-raml) - contains the actual Spring REST Docs extension. 
+This is most importantly the [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) which is the entrypoint to use the extension in your tests. The [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java). 
+
+The snippet generates a RAML fragment for each documenated resource. 
+- [restdocs-raml-gradle-plugin](restdocs-raml-gradle-plugin) - adds a gradle plugin that aggregates the RAML fragment produced  by `RamlResourceSnippet` into one `RAML` file for the whole products.
+
+### Usage
+
+The artifacts are published in 'jcenter' - so you firstly need 
