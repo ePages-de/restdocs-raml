@@ -24,11 +24,39 @@ dependencies {
     }
 }
 
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
+            artifactId 'restdocs-raml-gradle-plugin'
+            groupId = project.group
+
+            artifact sourceJar {
+                classifier 'sources'
+            }
         }
+    }
+}
+
+bintray {
+    user = project.findProperty('bintrayUser')   ?: System.getenv('BINTRAY_USER')
+    key  = project.findProperty('bintrayApiKey') ?: System.getenv('BINTRAY_API_KEY')
+    publications = ['mavenJava','sourceJar']
+    publish = true
+    pkg {
+        repo = "maven"
+        name = 'restdocs-raml-gradle-plugin'
+        userOrg = 'epages'
+        websiteUrl = 'https://github.com/ePages-de/restdocs-raml'
+        issueTrackerUrl = 'https://github.com/ePages-de/restdocs-raml/issues'
+        vcsUrl = 'https://github.com/ePages-de/restdocs-raml.git'
+        githubRepo = 'ePages-de/restdocs-raml'
+        githubReleaseNotesFile = 'README.md'
+        licenses = ['MIT']
     }
 }
 

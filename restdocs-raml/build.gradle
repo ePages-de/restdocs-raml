@@ -75,7 +75,7 @@ bintray {
         vcsUrl = 'https://github.com/ePages-de/restdocs-raml.git'
         githubRepo = 'ePages-de/restdocs-raml'
         githubReleaseNotesFile = 'README.md'
-        licenses = ['Apache-2.0']
+        licenses = ['MIT']
     }
 }
 
