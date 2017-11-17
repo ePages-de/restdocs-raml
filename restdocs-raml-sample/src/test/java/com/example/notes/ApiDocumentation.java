@@ -136,16 +136,17 @@ public class ApiDocumentation {
 		whenNoteIsRetrieved();
 
 		resultActions.andDo(document("notes-get",
-				//links(
-				//	linkWithRel("self").description("This <<resources-note,note>>"),
-				//	linkWithRel("note-tags").description("This note's <<resources-note-tags,tags>>")),
-					ramlResource(RamlResourceSnippetParameters.builder()
-							.responseFields(
-									fieldWithPath("title").description("The title of the note"),
-									fieldWithPath("body").description("The body of the note"),
-									fieldWithPath("_links").description("Links to other resources"))
-							.build()))
-			);
+				ramlResource(RamlResourceSnippetParameters.builder()
+						.description("Get all the notes")
+						.responseFields(
+								fieldWithPath("title").description("The title of the note"),
+								fieldWithPath("body").description("The body of the note"),
+								fieldWithPath("_links").description("Links to other resources"))
+						.links(
+								linkWithRel("self").description("This self reference"),
+								linkWithRel("note-tags").description("The link to the tags associated with this note"))
+						.build()))
+		);
 	}
 
 	@Test
@@ -221,6 +222,7 @@ public class ApiDocumentation {
 
 		resultActions.andDo(document("tags-get",
 				ramlResource(RamlResourceSnippetParameters.builder()
+						.description("Get all the tags")
 						.responseFields(
 								tagFields())
 						.links(

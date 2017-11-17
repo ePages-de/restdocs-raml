@@ -1,3 +1,7 @@
+import com.bmuschko.gradle.docker.tasks.container.DockerCreateContainer
+import com.bmuschko.gradle.docker.tasks.container.DockerStartContainer
+import com.bmuschko.gradle.docker.tasks.image.DockerPullImage
+
 buildscript {
     repositories {
         jcenter()
@@ -7,6 +11,7 @@ buildscript {
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.8.RELEASE'
         classpath 'com.epages:restdocs-raml-gradle-plugin:0.1.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:3.2.0'
     }
 }
 
@@ -14,6 +19,7 @@ apply plugin: 'java'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'eclipse'
 apply plugin: 'com.epages.restdocs-raml'
+apply plugin: 'com.bmuschko.docker-remote-api'
 
 repositories {
     jcenter()
@@ -46,6 +52,26 @@ ramldoc {
     apiBaseUri = 'http://localhost:8080/'
     ramlVersion = "1.0"
 }
+
+//use mattjtodd/raml2html to generate html out of api.raml
+task('pullRaml2Html', type:DockerPullImage, dependsOn: 'ramldoc') {
+    description = 'Pulls docker pull mattjtodd/raml2html'
+    repository = 'mattjtodd/raml2html'
+    tag = '6.3.0'
+}
+
+task('createRaml2HtmlContainer', type:DockerCreateContainer, dependsOn: 'pullRaml2Html') {
+    description = 'Creates container to generate HTML out of the RAML file'
+    targetImageId { tasks.pullRaml2Html.repository + ':' + tasks.pullRaml2Html.tag }
+    binds = ["${project.file('build/ramldoc').path}":'/raml']
+    cmd = ['--rm', '-i', '/raml/api.raml', '-o', '/raml/api.raml.html']
+}
+
+task('raml2html', type:DockerStartContainer, dependsOn: 'createRaml2HtmlContainer') {
+    description = 'Starts container to generate HTML out of the RAML file'
+    targetContainerId { tasks.createRaml2HtmlContainer.containerId }
+}
+
 
 task wrapper(type: Wrapper) {
     gradleVersion = '4.3'
