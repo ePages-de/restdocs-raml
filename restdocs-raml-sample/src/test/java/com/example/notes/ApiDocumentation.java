@@ -105,12 +105,7 @@ public class ApiDocumentation {
 
 		whenNotesRetrieved();
 
-		resultActions.andDo(document("notes-list",
-				ramlResource(RamlResourceSnippetParameters.builder()
-						.responseFields(
-								fieldWithPath("_embedded.notes").description("An array of <<resources-note, Note resources>>")
-						).build()))
-			);
+		resultActions.andDo(document("notes-list", ramlResource()));
 	}
 
 	@Test

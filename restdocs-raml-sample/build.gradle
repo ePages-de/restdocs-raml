@@ -1,11 +1,12 @@
 buildscript {
     repositories {
-        mavenLocal()
         jcenter()
+        maven { url 'https://dl.bintray.com/epages/maven/' }
+        //mavenLocal()
     }
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.8.RELEASE'
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.1.0-SNAPSHOT'
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.1.0'
     }
 }
 
@@ -17,12 +18,14 @@ apply plugin: 'com.epages.restdocs-raml'
 repositories {
     jcenter()
     maven { url 'https://jitpack.io' }
-    mavenLocal()
+    maven { url 'https://dl.bintray.com/epages/maven/' }
+    //mavenLocal()
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 group = 'com.epages'
+
 
 dependencies {
     compile 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -35,7 +38,7 @@ dependencies {
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testCompile "com.epages:restdocs-raml:0.1.0-SNAPSHOT"
+    testCompile "com.epages:restdocs-raml:0.1.0"
 }
 
 ramldoc {
