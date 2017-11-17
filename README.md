@@ -81,7 +81,7 @@ See the [build.gradle](restdocs-raml-sample/build.gradle) for the setup used in 
 
 The class [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) contains the entrypoint for using the [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java).
 
-The most basic form does not take and parameters:
+The most basic form does not take any parameters:
 
 ```java
 mockMvc
@@ -165,7 +165,7 @@ For this purpose we use the `ramldoc` task:
 ./gradlew ramldoc
 ```
 
-For our [sample project](restdocs-raml-sample) this creates the following output in the output directory (`build/ramldoc`).
+For our [sample project](restdocs-raml-sample) this creates the following files in the output directory (`build/ramldoc`).
 
 ```
 .
