@@ -47,6 +47,7 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
                 new JwtScopeHandler(),
                 new RequestHandler(),
                 new ResponseHandler(),
+                new LinkHandler(),
                 new TraitExtractorChain(singletonList(new PrivateResourceTraitExtractor()))));
     }
 

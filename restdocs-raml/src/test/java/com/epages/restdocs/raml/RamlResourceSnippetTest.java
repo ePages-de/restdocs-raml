@@ -106,7 +106,6 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     private void givenOperationWithoutBody() {
         final OperationBuilder operationBuilder = new OperationBuilder("test", temporaryFolder.getRoot())
                 .attribute(ATTRIBUTE_NAME_URL_TEMPLATE, "http://localhost:8080/some/{id}");
-        final String content = "{\"comment\": \"some\"}";
         operationBuilder
                 .request("http://localhost:8080/some/123")
                 .method("POST");

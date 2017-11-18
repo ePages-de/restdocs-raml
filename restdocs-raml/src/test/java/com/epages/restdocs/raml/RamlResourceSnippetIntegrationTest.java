@@ -105,7 +105,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
                         document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
                                 .requestFields(
                                         fieldDescriptors())
-                                .links(linkWithRel("self"))
+                                .links(linkWithRel("self").description("some"))
                                 .build()))
                 );
     }
