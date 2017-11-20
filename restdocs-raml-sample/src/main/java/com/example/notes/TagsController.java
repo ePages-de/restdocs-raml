@@ -17,10 +17,15 @@
 package com.example.notes;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.notes.NoteResourceAssembler.NoteResource;
 import com.example.notes.TagResourceAssembler.TagResource;
 
 @RestController
@@ -43,19 +47,24 @@ public class TagsController {
 
 	private final TagResourceAssembler tagResourceAssembler;
 
+	private PagedResourcesAssembler<Tag> pagedResourcesAssembler;
+
 	@Autowired
 	public TagsController(TagRepository repository,
-			NoteResourceAssembler noteResourceAssembler,
-			TagResourceAssembler tagResourceAssembler) {
+						  NoteResourceAssembler noteResourceAssembler,
+						  TagResourceAssembler tagResourceAssembler,
+						  PagedResourcesAssembler<Tag> pagedResourcesAssembler) {
 		this.repository = repository;
 		this.noteResourceAssembler = noteResourceAssembler;
 		this.tagResourceAssembler = tagResourceAssembler;
+		this.pagedResourcesAssembler = pagedResourcesAssembler;
 	}
 
 	@RequestMapping(method = RequestMethod.GET)
-	NestedContentResource<TagResource> all() {
-		return new NestedContentResource<TagResource>(
-				this.tagResourceAssembler.toResources(this.repository.findAll()));
+	PagedResources<TagResource> all(Pageable pageable) {
+		return pagedResourcesAssembler.toResource(repository.findAll(pageable),
+				tagResourceAssembler,
+				linkTo(methodOn(this.getClass()).all(null)).withSelfRel());
 	}
 
 	@ResponseStatus(HttpStatus.CREATED)
@@ -86,7 +95,7 @@ public class TagsController {
 	@RequestMapping(value = "/{id}/notes", method = RequestMethod.GET)
 	ResourceSupport tagNotes(@PathVariable("id") long id) {
 		Tag tag = findTagById(id);
-		return new NestedContentResource<NoteResource>(
+		return new Resources<>(
 				this.noteResourceAssembler.toResources(tag.getNotes()));
 	}
 

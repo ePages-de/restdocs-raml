@@ -1,6 +1,22 @@
 {{resource}}:
+  {{#pathParametersPresent}}
+  uriParameters:
+  {{#pathParameters}}
+    {{name}}:
+      description: {{description}}
+      type: {{type}}
+  {{/pathParameters}}
+  {{/pathParametersPresent}}
   {{method}}:
     description: {{description}}
+    {{#requestParametersPresent}}
+    queryParameters:
+    {{#requestParameters}}
+      {{name}}:
+        description: {{description}}
+        type: {{type}}
+    {{/requestParameters}}
+    {{/requestParametersPresent}}
     {{#scopes}}
     securedBy: {{scopes}}
     {{/scopes}}

@@ -1,5 +1,8 @@
 package com.epages.restdocs.raml;
 
+import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScalarType.INTEGER;
+import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScalarType.STRING;
+import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -103,8 +106,11 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         resultActions
                 .andDo(
                         document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
-                                .requestFields(
-                                        fieldDescriptors())
+                                .requestFields(fieldDescriptors())
+                                .responseFields(fieldDescriptors())
+                                .pathParameters(
+                                        parameterWithName("someId").description("some id").type(STRING),
+                                        parameterWithName("otherId").description("otherId id").type(INTEGER))
                                 .links(linkWithRel("self").description("some"))
                                 .build()))
                 );
@@ -119,7 +125,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     }
 
     private void givenEndpointInvoked() throws Exception {
-        resultActions = mockMvc.perform(post("/some/{id}", "id")
+        resultActions = mockMvc.perform(post("/some/{someId}/other/{otherId}", "id", 1)
                 .contentType(APPLICATION_JSON)
                 .content("{\n" +
                         "    \"comment\": \"some\",\n" +
@@ -149,11 +155,12 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     @RestController
     static class TestController {
 
-        @PostMapping(path = "/some/{id}")
-        public ResponseEntity<Resource<TestDateHolder>> doSomething(@PathVariable String id,
+        @PostMapping(path = "/some/{someId}/other/{otherId}")
+        public ResponseEntity<Resource<TestDateHolder>> doSomething(@PathVariable String someId,
+                                                                   @PathVariable Integer otherId,
                                                                    @RequestBody TestDateHolder testDateHolder) {
             Resource<TestDateHolder> resource = new Resource<>(testDateHolder);
-            resource.add(linkTo(methodOn(TestController.class).doSomething(id, null)).withSelfRel());
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withSelfRel());
             return ResponseEntity.ok(resource);
         }
     }

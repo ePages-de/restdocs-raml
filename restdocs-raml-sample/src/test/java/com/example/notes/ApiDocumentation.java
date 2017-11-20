@@ -16,7 +16,9 @@
 
 package com.example.notes;
 
+import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScalarType.INTEGER;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.fields;
+import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -30,6 +32,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.snippet.Attributes.key;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -157,9 +160,23 @@ public class ApiDocumentation {
 
 		resultActions.andDo(document("tags-list",
 				ramlResource(RamlResourceSnippetParameters.builder()
+						.description("Get a paged list of tags")
 						.responseFields(
-								fields(fieldWithPath("_embedded.tags").description("An array of tags"))
-										.andWithPrefix("_embedded.tags[].", tagFields()))
+								fields(
+										fieldWithPath("_embedded.tags").description("An array of tags"),
+										fieldWithPath("_links").description("Links"),
+										fieldWithPath("page").description("Paging information")
+								).andWithPrefix("_embedded.tags[].", tagFields()))
+						.links(
+								linkWithRel("self").description("Self link"),
+								linkWithRel("first").description("Link to the first page"),
+								linkWithRel("last").description("Link to the last page"),
+								linkWithRel("prev").description("Link to the previous page")
+						)
+						.requestParameters(
+								parameterWithName("size").description("Page size").type(INTEGER),
+								parameterWithName("page").description("Number of the requested page").type(INTEGER)
+						)
 						.build()))
 		);
 	}
@@ -222,9 +239,10 @@ public class ApiDocumentation {
 
 		resultActions.andDo(document("tags-get",
 				ramlResource(RamlResourceSnippetParameters.builder()
-						.description("Get all the tags")
+						.description("Get a tag by id")
 						.responseFields(
 								tagFields())
+						.pathParameters(parameterWithName("id").description("The id of the tag to retrieve"))
 						.links(
 								linkWithRel("self").description("Link to this tag"),
 								linkWithRel("tagged-notes").description("The resources that have this tag"))
@@ -278,8 +296,11 @@ public class ApiDocumentation {
 
 	private void whenTagsRetrieved() throws Exception {
 		resultActions = this.mockMvc
-				.perform(get("/tags"))
-				.andExpect(status().isOk());
+				.perform(get("/tags")
+					.param("size", "2")
+					.param("page", "1")
+				).andExpect(status().isOk())
+				.andDo(print());
 	}
 
 	private void givenTags() {
@@ -333,8 +354,7 @@ public class ApiDocumentation {
 
 	private void  whenNotesRetrieved() throws Exception {
 		resultActions = this.mockMvc
-				.perform(get("/notes"))
-				.andExpect(status().isOk());
+				.perform(get("/notes")).andExpect(status().isOk());
 	}
 
 	private void givenTag() throws Exception {

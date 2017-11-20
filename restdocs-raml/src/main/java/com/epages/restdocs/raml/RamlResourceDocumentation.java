@@ -15,4 +15,8 @@ public abstract class RamlResourceDocumentation {
     public static FieldDescriptors fields(FieldDescriptor... fieldDescriptors) {
         return new FieldDescriptors(fieldDescriptors);
     }
+
+    public static ParameterDescriptorWithRamlType parameterWithName(String name) {
+        return new ParameterDescriptorWithRamlType(name);
+    }
 }

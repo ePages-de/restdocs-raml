@@ -1,8 +1,8 @@
 package com.epages.restdocs.raml;
 
+import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScalarType.STRING;
+import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -11,14 +11,12 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.List;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.restdocs.operation.Operation;
-import org.springframework.restdocs.payload.FieldDescriptor;
 
 import lombok.SneakyThrows;
 
@@ -31,15 +29,18 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private List<FieldDescriptor> requestFieldDescriptors = emptyList();
-    private List<FieldDescriptor> responseFieldDescriptors = emptyList();
-    private List<String> fragmentFileContentLines;
+    private RamlResourceSnippetParameters.RamlResourceSnippetParametersBuilder parametersBuilder;
+
+    @Before
+    public void setUp() {
+        parametersBuilder = RamlResourceSnippetParameters.builder();
+    }
 
     @Test
     @SneakyThrows
     public void should_generate_raml_fragment_for_operation_with_request_body() {
         givenOperationWithRequestBody();
-        givenRequestFieldDescriptor();
+        givenRequestFieldDescriptors();
 
         whenRamlSnippetInvoked();
 
@@ -56,8 +57,10 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     @SneakyThrows
     public void should_generate_raml_fragment_for_operation_with_request_and_response_body() {
         givenOperationWithRequestAndResponseBody();
-        givenRequestFieldDescriptor();
-        givenResponseFieldDescriptor();
+        givenRequestFieldDescriptors();
+        givenResponseFieldDescriptors();
+        givenPathParameterDescriptors();
+        givenRequestParameterDescriptors();
 
         whenRamlSnippetInvoked();
 
@@ -87,10 +90,17 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         then(generatedResponseSchemaFile()).doesNotExist();
     }
 
+    private void givenPathParameterDescriptors() {
+        parametersBuilder.pathParameters(parameterWithName("id").type(STRING).description("an id"));
+    }
+
+    private void givenRequestParameterDescriptors() {
+        parametersBuilder.requestParameters(parameterWithName("test-param").type(STRING).description("test param"));
+    }
+
     @SneakyThrows
     private void thenFragmentFileExists() {
         then(generatedRamlFragmentFile()).exists();
-        fragmentFileContentLines = Files.readAllLines(generatedRamlFragmentFile().toPath());
     }
 
     @Override
@@ -125,12 +135,12 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
                 .build();
     }
 
-    private void givenRequestFieldDescriptor() {
-        requestFieldDescriptors = singletonList(fieldWithPath("comment").description("description"));
+    private void givenRequestFieldDescriptors() {
+        parametersBuilder.requestFields(fieldWithPath("comment").description("description"));
     }
 
-    private void givenResponseFieldDescriptor() {
-        responseFieldDescriptors = singletonList(fieldWithPath("comment").description("description"));
+    private void givenResponseFieldDescriptors() {
+        parametersBuilder.responseFields(fieldWithPath("comment").description("description"));
     }
 
     private void givenOperationWithRequestAndResponseBody() {
@@ -139,6 +149,7 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         final String content = "{\"comment\": \"some\"}";
         operationBuilder
                 .request("http://localhost:8080/some/123")
+                .param("test-param", "1")
                 .method("POST")
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                 .content(content);
@@ -152,10 +163,8 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     }
 
     private void whenRamlSnippetInvoked() throws IOException {
-        ramlResource(RamlResourceSnippetParameters.builder()
+        ramlResource(parametersBuilder
                 .description("some resource")
-                .requestFields(requestFieldDescriptors.toArray(new FieldDescriptor[0]))
-                .responseFields(responseFieldDescriptors.toArray(new FieldDescriptor[0]))
                 .build()).document(operation);
     }
 }

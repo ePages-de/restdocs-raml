@@ -16,9 +16,9 @@
 
 package com.example.notes;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface TagRepository extends CrudRepository<Tag, Long> {
+public interface TagRepository extends PagingAndSortingRepository<Tag, Long> {
 
 	Tag findById(long id);
 

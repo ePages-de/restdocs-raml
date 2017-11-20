@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.restdocs.request.ParameterDescriptor;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -24,12 +26,21 @@ public class RamlResourceSnippetParameters {
     private final List<FieldDescriptor> requestFields;
     private final List<FieldDescriptor> responseFields;
     private final List<LinkDescriptor> links;
+    private final List<ParameterDescriptorWithRamlType> pathParameters;
+    private final List<ParameterDescriptorWithRamlType> requestParameters;
 
-    protected List<FieldDescriptor> getResponseFieldsWithLinks() {
+    List<FieldDescriptor> getResponseFieldsWithLinks() {
         List<FieldDescriptor> combinedDescriptors = new ArrayList<>(getResponseFields());
         combinedDescriptors.addAll(
                 getLinks().stream()
-                        .map(l -> fieldWithPath("_links." + l.getRel()).description(l.getDescription()).type(JsonFieldType.OBJECT))
+                        .flatMap(l -> Stream.of(
+                                fieldWithPath("_links." + l.getRel())
+                                        .description(l.getDescription())
+                                        .type(JsonFieldType.OBJECT),
+                                fieldWithPath("_links." + l.getRel() + ".href")
+                                        .type(JsonFieldType.STRING)
+                                        .ignored()
+                        ))
                         .collect(Collectors.toList())
         );
         return combinedDescriptors;
@@ -40,6 +51,8 @@ public class RamlResourceSnippetParameters {
         private List<FieldDescriptor> requestFields = emptyList();
         private List<FieldDescriptor> responseFields = emptyList();
         private List<LinkDescriptor> links = emptyList();
+        private List<ParameterDescriptorWithRamlType> pathParameters = emptyList();
+        private List<ParameterDescriptorWithRamlType> requestParameters = emptyList();
 
         public RamlResourceSnippetParametersBuilder requestFields(FieldDescriptor... requestFields) {
             this.requestFields = Arrays.asList(requestFields);
@@ -63,6 +76,26 @@ public class RamlResourceSnippetParameters {
 
         public RamlResourceSnippetParametersBuilder links(LinkDescriptor... links) {
             this.links = Arrays.asList(links);
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder pathParameters(ParameterDescriptor... pathParameters) {
+            this.pathParameters = Stream.of(pathParameters).map(ParameterDescriptorWithRamlType::from).collect(Collectors.toList());
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder pathParameters(ParameterDescriptorWithRamlType... pathParameters) {
+            this.pathParameters = Arrays.asList(pathParameters);
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder requestParameters(ParameterDescriptor... requestParameters) {
+            this.requestParameters = Stream.of(requestParameters).map(ParameterDescriptorWithRamlType::from).collect(Collectors.toList());
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder requestParameters(ParameterDescriptorWithRamlType... requestParameters) {
+            this.requestParameters = Arrays.asList(requestParameters);
             return this;
         }
     }

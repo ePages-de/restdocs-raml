@@ -6,11 +6,11 @@ buildscript {
     repositories {
         jcenter()
         maven { url 'https://dl.bintray.com/epages/maven/' }
-        //mavenLocal()
+        mavenLocal()
     }
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.8.RELEASE'
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.1.0'
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.1.1-SNAPSHOT'
         classpath 'com.bmuschko:gradle-docker-plugin:3.2.0'
     }
 }
@@ -25,7 +25,7 @@ repositories {
     jcenter()
     maven { url 'https://jitpack.io' }
     maven { url 'https://dl.bintray.com/epages/maven/' }
-    //mavenLocal()
+    mavenLocal()
 }
 
 sourceCompatibility = 1.8
@@ -44,7 +44,8 @@ dependencies {
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc'
-    testCompile "com.epages:restdocs-raml:0.1.0"
+    testCompile 'com.epages:restdocs-raml:0.1.1-SNAPSHOT'
+    testCompile 'org.raml:raml-parser-2:1.0.15'
 }
 
 ramldoc {

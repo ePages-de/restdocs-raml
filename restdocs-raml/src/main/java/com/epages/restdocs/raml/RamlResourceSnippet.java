@@ -48,6 +48,8 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
                 new RequestHandler(),
                 new ResponseHandler(),
                 new LinkHandler(),
+                new PathParameterHandler(),
+                new RequestParameterHandler(),
                 new TraitExtractorChain(singletonList(new PrivateResourceTraitExtractor()))));
     }
 

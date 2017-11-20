@@ -1,6 +1,14 @@
 /some/{id}:
+  uriParameters:
+    id:
+      description: an id
+      type: string
   post:
     description: some resource
+    queryParameters:
+      test-param:
+        description: test param
+        type: string
     body:
       application/json:
         schema: !include test-schema-request.json

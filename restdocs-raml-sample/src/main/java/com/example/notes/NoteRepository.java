@@ -19,9 +19,9 @@ package com.example.notes;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface NoteRepository extends CrudRepository<Note, Long> {
+public interface NoteRepository extends PagingAndSortingRepository<Note, Long> {
 
 	Note findById(long id);
 
