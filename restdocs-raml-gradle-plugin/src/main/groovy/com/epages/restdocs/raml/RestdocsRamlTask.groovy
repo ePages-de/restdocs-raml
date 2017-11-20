@@ -128,8 +128,9 @@ class RamlFragments {
         List<RamlFragment> mergedFragmentList = ramlFragments.ramlFragments
                 .groupBy { it.remainingPath(ramlFragments.commonPath) }
                 .collect { remainingPath, fragments ->
-                    if (!remainingPath.isEmpty() && fragments.size() > 1) {
-                        new RamlFragment(fragments.inject(["$remainingPath:"]) { contentList, item -> contentList + item.remainingContentList})
+                    if (fragments.size() > 1) {
+                        String zero = remainingPath.isEmpty() ? "" : "$remainingPath:"
+                        new RamlFragment(fragments.inject(["$zero"]) { contentList, item -> contentList + item.remainingContentList})
                     } else {
                         fragments.get(0)
                     }

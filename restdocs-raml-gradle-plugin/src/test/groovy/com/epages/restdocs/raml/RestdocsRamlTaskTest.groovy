@@ -33,7 +33,8 @@ class RestdocsRamlTaskTest extends Specification {
     private void thenGroupFileGenerated() {
         def groupFile = new File(testProjectDir.root, "build/ramldoc/carts.raml")
         def groupFileLines = groupFile.readLines()
-        assert groupFileLines.head().startsWith("  post:")
+        assert groupFileLines.head().startsWith("  get:")
+        assert groupFileLines.any {it.startsWith("  post:")}
         assert groupFileLines.any {it.startsWith("  /{cartId}:")}
         assert groupFileLines.any {it.startsWith("    get:")}
         assert groupFileLines.any {it.startsWith("    delete:")}
@@ -54,17 +55,22 @@ class RestdocsRamlTaskTest extends Specification {
     }
 
     private def givenSnippetFiles() {
-        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-create"), "raml-resource.adoc") << """/carts:
+        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-create"), "raml-resource.raml") << """/carts:
   post:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
 """
-        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-get"), "raml-resource.adoc") << """/carts/{cartId}:
+        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-get"), "raml-resource.raml") << """/carts/{cartId}:
   get:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
 """
-        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-delete"), "raml-resource.adoc") << """/carts/{cartId}:
+        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-list"), "raml-resource.raml") << """/carts:
+  get:
+    description: "TODO - figure out how to set"
+    securedBy: ["pymt:u"]
+"""
+        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-delete"), "raml-resource.raml") << """/carts/{cartId}:
   delete:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
