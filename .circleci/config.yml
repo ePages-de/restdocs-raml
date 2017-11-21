@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/restdocs-raml
+    docker:
+      - image: circleci/openjdk:8-jdk
+    environment:
+      JVM_OPTS: -Xmx1024m
+    steps:
+      - checkout
+      - restore_cache:
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: ./gradlew dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: ./gradlew clean build jacocoTestReport coveralls
+      - store_test_results:
+          path: app/build/test-results
