@@ -40,7 +40,9 @@ jobs:
         
       - run: ./gradlew clean build jacocoTestReport coveralls
       - store_test_results:
-          path: app/build/test-results
+          path: restdocs-raml/build/reports/tests/test
+      - store_test_results:
+          path: restdocs-raml-gradle-plugin/build/reports/tests/test
 
 
 
