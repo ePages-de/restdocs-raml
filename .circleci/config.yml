@@ -26,9 +26,9 @@ jobs:
           key: dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
       - run: ./gradlew clean build jacocoTestReport coveralls
       - store_test_results:
-          path: restdocs-raml/build/reports/tests
+          path: restdocs-raml/build/reports
       - store_test_results:
-          path: restdocs-raml-gradle-plugin/build/reports/tests
+          path: restdocs-raml-gradle-plugin/build/reports
 
 
 
