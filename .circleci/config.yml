@@ -17,7 +17,6 @@ jobs:
     working_directory: ~/restdocs-raml
 
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx1024m
       TERM: dumb
     
@@ -30,14 +29,11 @@ jobs:
           - v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
       - run: gradle dependencies
-
       - save_cache:
           paths:
-            - ~/.m2
+            - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
-        
       - run: ./gradlew clean build jacocoTestReport coveralls
       - store_test_results:
           path: restdocs-raml/build/reports/tests/test

@@ -33,7 +33,7 @@ class RestdocsRamlTaskTest extends Specification {
     private void thenGroupFileGenerated() {
         def groupFile = new File(testProjectDir.root, "build/ramldoc/carts.raml")
         def groupFileLines = groupFile.readLines()
-        assert groupFileLines.head().startsWith("  get:")
+        assert groupFileLines.any {it.startsWith("  get:")}
         assert groupFileLines.any {it.startsWith("  post:")}
         assert groupFileLines.any {it.startsWith("  /{cartId}:")}
         assert groupFileLines.any {it.startsWith("    get:")}
