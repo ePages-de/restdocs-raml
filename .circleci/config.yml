@@ -6,39 +6,29 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/openjdk:8-jdk
-      
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
     working_directory: ~/restdocs-raml
-
     environment:
       JVM_OPTS: -Xmx1024m
       TERM: dumb
-    
     steps:
       - checkout
-
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
+          - dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - dependencies-
       - run: gradle dependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
+          key: dependencies-{{ checksum "build.gradle" }}-{{ checksum  "restdocs-raml/build.gradle" }}-{{ checksum  "restdocs-raml-gradle-plugin/build.gradle" }}
       - run: ./gradlew clean build jacocoTestReport coveralls
       - store_test_results:
-          path: restdocs-raml/build/reports/tests/test
+          path: restdocs-raml/build/reports/tests
       - store_test_results:
-          path: restdocs-raml-gradle-plugin/build/reports/tests/test
+          path: restdocs-raml-gradle-plugin/build/reports/tests
 
 
 
