@@ -1,6 +1,7 @@
 package com.epages.restdocs.raml;
 
 import static java.util.Collections.emptyList;
+import static lombok.AccessLevel.PRIVATE;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
 import java.util.ArrayList;
@@ -14,10 +15,12 @@ import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.request.ParameterDescriptor;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
+@AllArgsConstructor(access = PRIVATE)
 @Getter
 public class RamlResourceSnippetParameters {
 
