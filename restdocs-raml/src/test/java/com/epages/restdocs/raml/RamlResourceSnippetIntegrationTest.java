@@ -41,6 +41,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 @RunWith(SpringRunner.class)
@@ -107,7 +108,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
                 .andDo(
                         document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
                                 .requestFields(fieldDescriptors())
-                                .responseFields(fieldDescriptors())
+                                .responseFields(fieldDescriptors().and(fieldWithPath("id").description("id")))
                                 .pathParameters(
                                         parameterWithName("someId").description("some id").type(STRING),
                                         parameterWithName("otherId").description("otherId id").type(INTEGER))
@@ -117,7 +118,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     }
 
     private FieldDescriptors fieldDescriptors() {
-        return new FieldDescriptors(
+        return RamlResourceDocumentation.fields(
                 fieldWithPath("comment").description("the comment"),
                 fieldWithPath("flag").description("the flag"),
                 fieldWithPath("count").description("the count")
@@ -159,6 +160,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         public ResponseEntity<Resource<TestDateHolder>> doSomething(@PathVariable String someId,
                                                                    @PathVariable Integer otherId,
                                                                    @RequestBody TestDateHolder testDateHolder) {
+            testDateHolder.setId(UUID.randomUUID().toString());
             Resource<TestDateHolder> resource = new Resource<>(testDateHolder);
             resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withSelfRel());
             return ResponseEntity.ok(resource);
@@ -171,5 +173,8 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         private final String comment;
         private final boolean flag;
         private int count;
+
+        @Setter
+        private String id;
     }
 }
