@@ -19,12 +19,16 @@ class RestdocsRamlTask extends DefaultTask {
     @Input
     Property<String> apiTitle = project.objects.property(String)
     @Input
+    Property<Boolean> separatePublicApi =  project.objects.property(Boolean)
+    @Input
     Property<String> outputDirectory
     @Input
     Property<String> snippetsDirectory
 
     static String version08 = "#%RAML 0.8"
     static String version10 = "#%RAML 1.0"
+
+    static String ramlVersionSetting08 = 0.8
 
     private String outputFileNamePrefix = "api"
 
@@ -48,7 +52,9 @@ class RestdocsRamlTask extends DefaultTask {
         def ramlFragments = new RamlFragments(ramlFragmentFiles.collect { new RamlFragment(it.readLines())})
 
         writeFiles(ramlFragments, false)
-        writeFiles(ramlFragments, true)
+
+        if (separatePublicApi.get())
+            writeFiles(ramlFragments, true)
     }
 
     private def copyBodyJsonFilesToOutput() {
@@ -69,11 +75,12 @@ class RestdocsRamlTask extends DefaultTask {
         ramlFragmentsList.each { fragments ->
             new File(outputDirectory, fragments.getGroupFileName(ignorePrivate)).withWriter('utf-8') { writer ->
                 fragments.ramlFragments.each { fragment ->
+                    def remainingContent = ramlVersion.get() == ramlVersionSetting08 ? fragment.remainingContent : fragment.remainingContent.replaceAll("schema: !include", "type: !include")
                     if (!fragment.remainingPath(fragments.commonPath).isEmpty()) {
                         writer.write("  ${fragment.remainingPath(fragments.commonPath)}:\n")
-                        writer.write("  ${fragment.remainingContent.replaceAll("\n", "\n  ")}\n")
+                        writer.write("  ${remainingContent.replaceAll("\n", "\n  ")}\n")
                     } else {
-                        writer.write("${fragment.remainingContent}\n")
+                        writer.write("${remainingContent}\n")
                     }
                 }
             }
@@ -83,7 +90,7 @@ class RestdocsRamlTask extends DefaultTask {
     def writeAggregateFile(List<RamlFragments> ramlFragmentsList, File outputFile, boolean ignorePrivate) {
         outputFile.withWriter('utf-8') { writer ->
 
-            def ramlVersionString = ramlVersion.get() == "0.8" ? version08 : version10
+            def ramlVersionString = ramlVersion.get() == ramlVersionSetting08 ? version08 : version10
             writer.write("$ramlVersionString\n")
             if (apiTitle.isPresent()) {
                 writer.write("title: ${apiTitle.get()}\n")

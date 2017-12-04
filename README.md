@@ -238,6 +238,7 @@ Name | Description | Default value
 apiTitle | The title of the generated top-level `RAML` file | empty
 apiBaseUri | The base uri added to the top-level `RAML` file | empty
 ramlVersion | `RAML` version header - `0.8` or `1.0` | `1.0`
+separatePublicApi | Should the plugin generate an additional `api-public.raml` that does not contain the resources marked as private | `falseè
 outputDirectory | The output directory | `build/ramldoc`
 snippetsDirectory | The directory Spring REST Docs generated the snippets to | `build/generated-snippets`
 

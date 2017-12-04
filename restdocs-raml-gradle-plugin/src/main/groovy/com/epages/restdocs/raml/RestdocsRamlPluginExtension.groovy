@@ -9,6 +9,7 @@ class RestdocsRamlPluginExtension {
     Property<String> apiBaseUri
     Property<String> apiTitle
 
+    Property<Boolean> separatePublicApi
     Property<String> outputDirectory
     Property<String> snippetsDirectory
 
@@ -19,6 +20,9 @@ class RestdocsRamlPluginExtension {
         apiBaseUri = project.objects.property(String)
 
         apiTitle = project.objects.property(String)
+
+        separatePublicApi = project.objects.property(Boolean)
+        separatePublicApi.set(false)
 
         outputDirectory = project.objects.property(String)
         outputDirectory.set("build/ramldoc")
