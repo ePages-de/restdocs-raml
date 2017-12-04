@@ -140,7 +140,8 @@ public class ApiDocumentation {
 
 		resultActions.andDo(document("notes-get",
 				ramlResource(RamlResourceSnippetParameters.builder()
-						.description("Get all the notes")
+						.description("Get a note by id")
+						.pathParameters(parameterWithName("id").description("The note id"))
 						.responseFields(
 								fieldWithPath("title").description("The title of the note"),
 								fieldWithPath("body").description("The body of the note"),
@@ -240,8 +241,7 @@ public class ApiDocumentation {
 		resultActions.andDo(document("tags-get",
 				ramlResource(RamlResourceSnippetParameters.builder()
 						.description("Get a tag by id")
-						.responseFields(
-								tagFields())
+						.responseFields(tagFields())
 						.pathParameters(parameterWithName("id").description("The id of the tag to retrieve"))
 						.links(
 								linkWithRel("self").description("Link to this tag"),

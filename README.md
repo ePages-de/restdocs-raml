@@ -29,7 +29,7 @@ The project consists of two components:
 
 - [restdocs-raml](restdocs-raml) - contains the actual Spring REST Docs extension. 
 This is most importantly the [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) which is the entrypoint to use the extension in your tests. The [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java) is the  snippet generating a RAML fragment for each documenated resource. 
-- [restdocs-raml-gradle-plugin](restdocs-raml-gradle-plugin) - adds a gradle plugin that aggregates the RAML fragment produced  by `RamlResourceSnippet` into one `RAML` file for the whole products.
+- [restdocs-raml-gradle-plugin](restdocs-raml-gradle-plugin) - adds a gradle plugin that aggregates the RAML fragment produced  by `RamlResourceSnippet` into one `RAML` file for the whole project.
 
 ### Build configuration
 
@@ -41,7 +41,7 @@ buildscript {
     }
     dependencies {
         //..
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.0' //2
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.1' //2
     }
 }
 //..
@@ -56,7 +56,7 @@ repositories { //4
 
 dependencies {
     //..
-    testCompile 'com.epages:restdocs-raml:0.2.0' //5
+    testCompile 'com.epages:restdocs-raml:0.2.1' //5
     testCompile 'org.json:json:20170516' //6
 }
 
@@ -108,25 +108,30 @@ The `raml-resource.raml` is the raml fragment describing this resource.
             example: !include notes-list-response.json
 ```
 
-Just like you are used to do with Spring REST Docs we can also describe request and response fields and links. Furthermore you can add a text description for your resource. The extension also discovers `JWT` tokens in the `Authorization` header and will document the required scopes from it.
+Just like you are used to do with Spring REST Docs we can also describe request fields, response fields, path variables, parameters, and links.
+Furthermore you can add a text description for your resource.
+The extension also discovers `JWT` tokens in the `Authorization` header and will document the required scopes from it.
 
-The following example uses `RamlResourceSnippetParameters` to document response fields and links. We paid close attention to keep the API as similar as possbile to what you already know from Spring REST Docs. `fieldWithPath` and `linkWithRel` are actually still the static methods you would use in your using Spring REST Docs test.
+The following example uses `RamlResourceSnippetParameters` to document response fields and links.
+We paid close attention to keep the API as similar as possible to what you already know from Spring REST Docs.
+`fieldWithPath` and `linkWithRel` are actually still the static methods you would use in your using Spring REST Docs test.
 
 ```java
 mockMvc
 	.perform(get("/notes/{id}", noteId))
 	.andExpect(status().isOk())
     .andDo(document("notes-get",
-        ramlResource(RamlResourceSnippetParameters.builder()
-            .description("Get all the notes")
-            .responseFields(
-                fieldWithPath("title").description("The title of the note"),
-                fieldWithPath("body").description("The body of the note"),
-                fieldWithPath("_links").description("Links to other resources"))
-            .links(
-                linkWithRel("self").description("This self reference"),
-                linkWithRel("note-tags").description("The link to the tags associated with this note"))
-            .build()))
+	    ramlResource(RamlResourceSnippetParameters.builder()
+		    .description("Get a note by id")
+			  .pathParameters(parameterWithName("id").description("The note id"))
+			  .responseFields(
+			    fieldWithPath("title").description("The title of the note"),
+				  fieldWithPath("body").description("The body of the note"),
+				  fieldWithPath("_links").description("Links to other resources"))
+				.links(
+				  linkWithRel("self").description("This self reference"),
+					linkWithRel("note-tags").description("The link to the tags associated with this note"))
+		.build()))
 );
 ```
 
@@ -147,6 +152,46 @@ The `raml-resource.raml` fragment would look like this.
 ```
 
 It now carries a reference to the json schema.
+
+```json
+{
+  "type" : "object",
+  "properties" : {
+    "_links" : {
+      "description" : "Links to other resources",
+      "type" : "object",
+      "properties" : {
+        "note-tags" : {
+          "description" : "The link to the tags associated with this note",
+          "type" : "object",
+          "properties" : {
+            "href" : {
+              "type" : "string"
+            }
+          }
+        },
+        "self" : {
+          "description" : "This self reference",
+          "type" : "object",
+          "properties" : {
+            "href" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "body" : {
+      "description" : "The body of the note",
+      "type" : "string"
+    },
+    "title" : {
+      "description" : "The title of the note",
+      "type" : "string"
+    }
+  }
+}
+```
 
 **:warning: Use `template URIs` to refer to path variables in your request**
 
@@ -191,7 +236,9 @@ For our [sample project](restdocs-raml-sample) this creates the following files 
 └── tags.raml
 ```
 
-`api.raml` is the top-level `RAML` file. `api-public.raml` does not contain the resources that you have marked as _private_ using `RamlResourceSnippetParameters.privateResource`.
+`api.raml` is the top-level `RAML` file. 
+`api-public.raml` does not contain the resources that you have marked as _private_ using `RamlResourceSnippetParameters.privateResource`.
+The file `api-public.raml` if you set `separatePublicApi` property to true (see [Gradle plugin configuration](#gradle-plugin-configuration))
 
 *api.raml*
 ```yaml
@@ -210,14 +257,14 @@ The top-level file just links to the top-level resources - here we have `tags` a
     description: notes-create
     body:
       application/hal+json:
-        schema: !include notes-create-schema-request.json
+        type: !include notes-create-schema-request.json
         example: !include notes-create-request.json
   /{id}:
     patch:
       description: tags-patch
       body:
         application/hal+json:
-          schema: !include tags-patch-schema-request.json
+          type: !include tags-patch-schema-request.json
           example: !include tags-patch-request.json
     get:
       description: notes-get
@@ -225,7 +272,7 @@ The top-level file just links to the top-level resources - here we have `tags` a
         200:
           body:
             application/hal+json:
-              schema: !include notes-get-schema-response.json
+              type: !include notes-get-schema-response.json
               example: !include notes-get-response.json
 ```
 
@@ -238,7 +285,7 @@ Name | Description | Default value
 apiTitle | The title of the generated top-level `RAML` file | empty
 apiBaseUri | The base uri added to the top-level `RAML` file | empty
 ramlVersion | `RAML` version header - `0.8` or `1.0` | `1.0`
-separatePublicApi | Should the plugin generate an additional `api-public.raml` that does not contain the resources marked as private | `falseè
+separatePublicApi | Should the plugin generate an additional `api-public.raml` that does not contain the resources marked as private | `false`
 outputDirectory | The output directory | `build/ramldoc`
 snippetsDirectory | The directory Spring REST Docs generated the snippets to | `build/generated-snippets`
 
@@ -246,7 +293,7 @@ snippetsDirectory | The directory Spring REST Docs generated the snippets to | `
 
 We can use [raml2html](https://www.npmjs.com/package/raml2html) to generate HTML out of our `RAML` file.
 
-Our [sample project](restdocs-raml-sample/build.gradle) contains a setup for this. We use the [gradle-docker-plugin](https://github.com/bmuschko/gradle-docker-plugin) and a [docker image containing `raml2html`](https://github.com/mattjtodd/docker-raml2html).
+Our [sample project](restdocs-raml-sample/build.gradle) contains a setup to do this via docker. We use the [gradle-docker-plugin](https://github.com/bmuschko/gradle-docker-plugin) and a [docker image containing `raml2html`](https://github.com/mattjtodd/docker-raml2html).
 
 So you can generate HTML for our sample project using
 
@@ -257,7 +304,7 @@ cd restdocs-raml-sample
 
 You find the HTML file under `build/ramldoc/api.raml.html` after running the gradle task.
 
-:warning: the current version of raml2html is only working with RAML 1.0
+:warning: the current version of raml2html is only working with RAML 1.0 - you have to fall back to raml2html version 3 - `npm install -g raml2html@3.0.1`
 
 ## Limitations
 
