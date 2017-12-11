@@ -130,7 +130,7 @@ mockMvc
 				  fieldWithPath("_links").description("Links to other resources"))
 				.links(
 				  linkWithRel("self").description("This self reference"),
-					linkWithRel("note-tags").description("The link to the tags associated with this note"))
+				  linkWithRel("note-tags").description("The link to the tags associated with this note"))
 		.build()))
 );
 ```
@@ -141,8 +141,12 @@ The `raml-resource.raml` fragment would look like this.
 
 ```yaml
 /notes/{id}:
+  uriParameters:
+    id:
+      description: The note id
+      type: string
   get:
-    description: Get all the notes
+    description: Get a note by id
     responses:
       200:
         body:
