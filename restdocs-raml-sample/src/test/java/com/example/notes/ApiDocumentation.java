@@ -122,6 +122,7 @@ public class ApiDocumentation {
 		resultActions
 				.andDo(document("notes-create",
 						ramlResource(RamlResourceSnippetParameters.builder()
+								.description("Create a note")
 								.requestFields(
 										noteFields.withPath("title").description("The title of the note"),
 										noteFields.withPath("body").description("The body of the note"),
@@ -191,8 +192,9 @@ public class ApiDocumentation {
 		whenTagsCreated();
 
 		resultActions.andDo(document("tags-create",
-				ramlResource(RamlResourceSnippetParameters.builder().
-						requestFields(
+				ramlResource(RamlResourceSnippetParameters.builder()
+						.description("Create a tag")
+						.requestFields(
 								fields.withPath("name").description("The name of the tag"))
 						.build())));
 	}
@@ -215,21 +217,22 @@ public class ApiDocumentation {
 
 		whenNoteUpdated(noteUpdate);
 
-		resultActions.andDo(document("tags-patch",
-						ramlResource(RamlResourceSnippetParameters.builder().
-								requestFields(
-										fieldWithPath("title")
-												.description("The title of the note")
-												.type(JsonFieldType.STRING)
-												.optional(),
-										fieldWithPath("body")
-												.description("The body of the note")
-												.type(JsonFieldType.STRING)
-												.optional(),
-										fieldWithPath("tags")
-												.description("An array of tag resource URIs"))
-								.build()))
-			);
+		resultActions.andDo(document("notes-patch",
+				ramlResource(RamlResourceSnippetParameters.builder()
+						.description("Partially update a note")
+						.requestFields(
+								fieldWithPath("title")
+										.description("The title of the note")
+										.type(JsonFieldType.STRING)
+										.optional(),
+								fieldWithPath("body")
+										.description("The body of the note")
+										.type(JsonFieldType.STRING)
+										.optional(),
+								fieldWithPath("tags")
+										.description("An array of tag resource URIs"))
+						.build()))
+		);
 	}
 
 	@Test
@@ -264,8 +267,9 @@ public class ApiDocumentation {
 		whenTagUpdated(tagUpdate);
 
 		resultActions.andDo(document("tags-patch",
-						ramlResource(RamlResourceSnippetParameters.builder().
-								requestFields(
+						ramlResource(RamlResourceSnippetParameters.builder()
+								.description("Partially update a tag")
+								.requestFields(
 										tagFields())
 								.build()))
 				);
