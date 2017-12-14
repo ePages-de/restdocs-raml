@@ -7,6 +7,8 @@
 
 This is an extension that adds [RAML (RESTful API Modeling Language)](https://raml.org) as an output format to [Spring REST Docs](https://projects.spring.io/spring-restdocs/).
 
+Check out our [introductory blog post](https://developer.epages.com/blog/api-experience/restful-api-documentation-with-spring-rest-docs-and-raml/) for a quick overview. 
+
 ## Motivation
 
 [Spring REST Docs](https://projects.spring.io/spring-restdocs/) is a great tool to produce documentation for your RESTful services that is accurate and readable.
