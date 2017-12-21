@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,12 +82,10 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
     }
 
     private void documentSnippet(Operation operation) throws IOException {
-        RestDocumentationContext context = (RestDocumentationContext) operation
-                .getAttributes().get(RestDocumentationContext.class.getName());
 
         WriterResolver writerResolver = new StandardWriterResolver(new RestDocumentationContextPlaceholderResolverFactory(), DEFAULT_SNIPPET_ENCODING, new RamlTemplateFormat());
         try (Writer writer = writerResolver.resolve(operation.getName(), SNIPPET_NAME,
-                context)) {
+                (RestDocumentationContext) operation.getAttributes().get(RestDocumentationContext.class.getName()))) {
             Map<String, Object> model = createModel(operation);
             TemplateEngine templateEngine = new MustacheTemplateEngine(new StandardTemplateResourceResolver(new RamlTemplateFormat()));
             writer.append(templateEngine.compileTemplate(SNIPPET_NAME).render(model));
@@ -119,14 +119,28 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
     }
 
     private void storeFile(Operation operation, String filename, String content) {
-        RestDocumentationContext context = (RestDocumentationContext) operation
-                .getAttributes().get(RestDocumentationContext.class.getName());
-
-        File output = new File(context.getOutputDirectory(), operation.getName() + "/" + filename);
+        File output = getOutputFile(operation, filename);
         try (Writer writer = new OutputStreamWriter(Files.newOutputStream(output.toPath()))) {
             writer.append(content);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    private File getOutputFile(Operation operation, String filename) {
+        Object context = operation.getAttributes().get(RestDocumentationContext.class.getName());
+        try {
+            //use reflection here because of binary incompatibility between spring-restdocs 1 and 2
+            //RestDocumentationContext changed from a class to an interface
+            //if our code should work against both versions we need to avoid compiling against a version directly
+            //see https://github.com/ePages-de/restdocs-raml/issues/7
+            //we can remove the use of reflection when we drop support for spring-restdocs 1
+            Method getOutputDirectory = context.getClass().getDeclaredMethod("getOutputDirectory");
+            getOutputDirectory.setAccessible(true);
+            File outputFile = (File) getOutputDirectory.invoke(context);
+            return new File(outputFile, operation.getName() + "/" + filename);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            return null;
         }
     }
 
