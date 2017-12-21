@@ -208,6 +208,13 @@ Note how we use the `urlTemplate` to build the request with [`RestDocumentationR
 mockMvc.perform(get("/notes/{id}", noteId))
  ```
 
+### Compatibility with Spring REST Docs
+
+`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.2`.
+
+We adopted the Spring REST Docs sample project that shows the usage of `WebTestClient` to use `restdocs-raml` to verify the compatibility.
+See https://github.com/mduesterhoeft/spring-restdocs/tree/master/samples/web-test-client.
+
 ### Running the gradle plugin
 
 `restdocs-raml-gradle-plugin` is responsible for picking up the generated `RAML` fragments and aggregate them into a set of top-level `RAML` files that describe the complete API.
