@@ -7,19 +7,21 @@ class RestdocsRamlPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        def extension = project.extensions.create('ramldoc', RestdocsRamlPluginExtension, project)
+        project.extensions.create('ramldoc', RestdocsRamlPluginExtension, project)
 
-        project.task("ramldoc", type: RestdocsRamlTask, dependsOn: 'check') {
-            description = 'aggregate raml fragments into a service raml'
+        project.afterEvaluate {
+            project.task("ramldoc", type: RestdocsRamlTask, dependsOn: 'check') {
+                description = 'Aggregate raml fragments into a service raml'
 
-            ramlVersion = extension.ramlVersion
-            apiBaseUri = extension.apiBaseUri
-            apiTitle = extension.apiTitle
+                ramlVersion = project.ramldoc.ramlVersion
+                apiBaseUri = project.ramldoc.apiBaseUri
+                apiTitle = project.ramldoc.apiTitle
 
-            separatePublicApi = extension.separatePublicApi
+                separatePublicApi = project.ramldoc.separatePublicApi
 
-            outputDirectory = extension.outputDirectory
-            snippetsDirectory = extension.snippetsDirectory
+                outputDirectory = project.ramldoc.outputDirectory
+                snippetsDirectory = project.ramldoc.snippetsDirectory
+            }
         }
     }
 }

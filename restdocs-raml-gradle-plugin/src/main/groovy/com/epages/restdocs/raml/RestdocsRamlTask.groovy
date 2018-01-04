@@ -1,8 +1,8 @@
 package com.epages.restdocs.raml
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 import java.nio.file.Files
@@ -13,22 +13,29 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING
 class RestdocsRamlTask extends DefaultTask {
 
     @Input
-    Property<String> ramlVersion = project.objects.property(String)
+    String ramlVersion
+
     @Input
-    Property<String> apiBaseUri = project.objects.property(String)
+    @Optional
+    String apiBaseUri
+
     @Input
-    Property<String> apiTitle = project.objects.property(String)
+    @Optional
+    String apiTitle
+
     @Input
-    Property<Boolean> separatePublicApi =  project.objects.property(Boolean)
+    Boolean separatePublicApi
+
     @Input
-    Property<String> outputDirectory
+    String outputDirectory
+
     @Input
-    Property<String> snippetsDirectory
+    String snippetsDirectory
 
     static String version08 = "#%RAML 0.8"
     static String version10 = "#%RAML 1.0"
 
-    static String ramlVersionSetting08 = 0.8
+    static String ramlVersionSetting08 = "0.8"
 
     private String outputFileNamePrefix = "api"
 
@@ -53,7 +60,7 @@ class RestdocsRamlTask extends DefaultTask {
 
         writeFiles(ramlFragments, false)
 
-        if (separatePublicApi.get())
+        if (separatePublicApi)
             writeFiles(ramlFragments, true)
     }
 
@@ -67,7 +74,7 @@ class RestdocsRamlTask extends DefaultTask {
         def groupedFragments = ramlFragments.groupByFirstPathPart(ignorePrivate)
 
         writeGroupFiles(groupedFragments, getOutputDirectory(), ignorePrivate)
-        def aggregateFileName = ignorePrivate ? "${outputDirectory.get()}/${outputFileNamePrefix}-public.raml" : "${outputDirectory.get()}/${outputFileNamePrefix}.raml"
+        def aggregateFileName = ignorePrivate ? "${outputDirectory}/${outputFileNamePrefix}-public.raml" : "${outputDirectory}/${outputFileNamePrefix}.raml"
         writeAggregateFile(groupedFragments, project.file(aggregateFileName), ignorePrivate)
     }
 
@@ -75,7 +82,7 @@ class RestdocsRamlTask extends DefaultTask {
         ramlFragmentsList.each { fragments ->
             new File(outputDirectory, fragments.getGroupFileName(ignorePrivate)).withWriter('utf-8') { writer ->
                 fragments.ramlFragments.each { fragment ->
-                    def remainingContent = ramlVersion.get() == ramlVersionSetting08 ? fragment.remainingContent : fragment.remainingContent.replaceAll("schema: !include", "type: !include")
+                    def remainingContent = ramlVersion == ramlVersionSetting08 ? fragment.remainingContent : fragment.remainingContent.replaceAll("schema: !include", "type: !include")
                     if (!fragment.remainingPath(fragments.commonPath).isEmpty()) {
                         writer.write("  ${fragment.remainingPath(fragments.commonPath)}:\n")
                         writer.write("  ${remainingContent.replaceAll("\n", "\n  ")}\n")
@@ -90,13 +97,12 @@ class RestdocsRamlTask extends DefaultTask {
     def writeAggregateFile(List<RamlFragments> ramlFragmentsList, File outputFile, boolean ignorePrivate) {
         outputFile.withWriter('utf-8') { writer ->
 
-            def ramlVersionString = ramlVersion.get() == ramlVersionSetting08 ? version08 : version10
+            def ramlVersionString = ramlVersion == ramlVersionSetting08 ? version08 : version10
             writer.write("$ramlVersionString\n")
-            if (apiTitle.isPresent()) {
-                writer.write("title: ${apiTitle.get()}\n")
-            }
-            if (apiBaseUri.isPresent()) {
-                writer.write("baseUri: ${apiBaseUri.get()}\n")
+            writer.write("title: ${apiTitle == null ? "API documentation" : apiTitle}\n")
+
+            if (apiBaseUri != null) {
+                writer.write("baseUri: ${apiBaseUri}\n")
             }
             ramlFragmentsList.each { fragments ->
                 writer.write("${fragments.commonPath}: !include ${fragments.getGroupFileName(ignorePrivate)}\n")

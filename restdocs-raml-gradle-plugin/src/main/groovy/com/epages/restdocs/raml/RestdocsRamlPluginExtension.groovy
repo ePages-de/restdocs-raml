@@ -1,33 +1,16 @@
 package com.epages.restdocs.raml
 
 import org.gradle.api.Project
-import org.gradle.api.provider.Property
 
 class RestdocsRamlPluginExtension {
+    String ramlVersion = "1.0"
+    String apiBaseUri
+    String apiTitle = "API documentation"
 
-    Property<String> ramlVersion
-    Property<String> apiBaseUri
-    Property<String> apiTitle
-
-    Property<Boolean> separatePublicApi
-    Property<String> outputDirectory
-    Property<String> snippetsDirectory
+    Boolean separatePublicApi = false
+    String outputDirectory = "build/ramldoc"
+    String snippetsDirectory = "build/generated-snippets"
 
     RestdocsRamlPluginExtension(Project project) {
-        ramlVersion = project.objects.property(String)
-        ramlVersion.set("1.0")
-
-        apiBaseUri = project.objects.property(String)
-
-        apiTitle = project.objects.property(String)
-
-        separatePublicApi = project.objects.property(Boolean)
-        separatePublicApi.set(false)
-
-        outputDirectory = project.objects.property(String)
-        outputDirectory.set("build/ramldoc")
-
-        snippetsDirectory = project.objects.property(String)
-        snippetsDirectory.set("build/generated-snippets")
     }
 }

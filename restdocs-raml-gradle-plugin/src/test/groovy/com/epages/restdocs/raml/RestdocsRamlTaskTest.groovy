@@ -1,44 +1,95 @@
 package com.epages.restdocs.raml
 
-import org.gradle.api.Project
-import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
+import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
+
 class RestdocsRamlTaskTest extends Specification {
 
-    @Rule
-    final TemporaryFolder testProjectDir = new TemporaryFolder()
+    @Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
+    File buildFile
+    List<File> pluginClasspath
+    BuildResult result
 
-    RestdocsRamlTask restdocsRamlTask
+    String apiTitle
+    String baseUri
+    String ramlVersion
+    boolean separatePublicApi = false
+
+    def setup() {
+        apiTitle = "Notes API"
+        baseUri = "http://localhost:8080/"
+        ramlVersion = 1.0
+
+        buildFile = testProjectDir.newFile('build.gradle')
+
+        testProjectDir.newFolder("build", "generated-snippets")
+
+        def pluginClasspathResource = getClass().classLoader.findResource("plugin-classpath.txt")
+        if (pluginClasspathResource == null) {
+            throw new IllegalStateException("Did not find plugin classpath resource, run `testClasses` build task.")
+        }
+
+        pluginClasspath = pluginClasspathResource.readLines().collect { new File(it) }
+    }
 
     def "should aggregate raml fragments"() {
         given:
-            givenTask("0.8", true)
+            separatePublicApi = true
+            ramlVersion = "0.8"
+            givenBuildFileWithRamldocClosure()
             givenSnippetFiles()
             givenRequestBodyJsonFile()
         when:
-            restdocsRamlTask.aggregateRamlFragments()
+            whenPluginExecuted()
         then:
-            thenApiRamlFileGenerated("#%RAML 0.8")
+            result.task(":ramldoc").outcome == SUCCESS
+            thenApiRamlFileGenerated()
+            thenGroupFileGenerated()
+            thenRequestBodyJsonFileFoundInOutputDirectory()
+    }
+
+    def "should aggregate raml fragments with empty config"() {
+        given:
+            apiTitle = null
+            baseUri = null
+            givenBuildFileWithoutConfig()
+            givenSnippetFiles()
+            givenRequestBodyJsonFile()
+        when:
+            whenPluginExecuted()
+        then:
+            result.task(":ramldoc").outcome == SUCCESS
+            thenApiRamlFileGenerated()
             thenGroupFileGenerated()
             thenRequestBodyJsonFileFoundInOutputDirectory()
     }
 
     def "should aggregate raml fragments with version 1.0"() {
         given:
-          givenTask("1.0", false)
+          givenBuildFileWithRamldocClosure()
           givenSnippetFiles()
           givenRequestBodyJsonFile()
         when:
-          restdocsRamlTask.aggregateRamlFragments()
+          whenPluginExecuted()
         then:
-          thenApiRamlFileGenerated("#%RAML 1.0")
-          thenGroupFileGenerated()
-          thenRequestBodyJsonFileFoundInOutputDirectory()
+            result.task(":ramldoc").outcome == SUCCESS
+            thenApiRamlFileGenerated()
+            thenGroupFileGenerated()
+            thenRequestBodyJsonFileFoundInOutputDirectory()
     }
 
+    private void whenPluginExecuted() {
+        result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('ramldoc')
+                .withPluginClasspath(pluginClasspath)
+                .build()
+    }
     private void thenRequestBodyJsonFileFoundInOutputDirectory() {
         assert new File(testProjectDir.root,"build/ramldoc/carts-create-request.json").exists()
     }
@@ -51,22 +102,24 @@ class RestdocsRamlTaskTest extends Specification {
         assert groupFileLines.any {it.startsWith("  /{cartId}:")}
         assert groupFileLines.any {it.startsWith("    get:")}
         assert groupFileLines.any {it.startsWith("    delete:")}
-        if (restdocsRamlTask.ramlVersion.get() == "0.8")
+        if (ramlVersion == "0.8")
             assert groupFileLines.any {it.contains("schema: !include carts-create-request.json")}
         else
             assert groupFileLines.any {it.contains("type: !include carts-create-request.json")}
 
-        if (restdocsRamlTask.separatePublicApi.get())
+        if (separatePublicApi)
             assert new File(testProjectDir.root, "build/ramldoc/carts-public.raml").exists()
     }
 
-    private void thenApiRamlFileGenerated(String expectedVersion) {
+    private void thenApiRamlFileGenerated() {
         def apiFile = new File(testProjectDir.root, "build/ramldoc/api.raml")
         def lines = apiFile.readLines()
         assert apiFile.exists()
-        assert lines.any { it == expectedVersion }
-        assert lines.any { it.startsWith("title:") }
-        assert lines.any { it.startsWith("baseUri:") }
+        assert lines.any { it == "#%RAML $ramlVersion" }
+        assert lines.any { apiTitle ?: it.startsWith("title: API documentation") }
+        if (baseUri != null) {
+            assert lines.any { it.startsWith("baseUri:") }
+        }
         assert lines.any() { it == "/carts: !include carts.raml" }
     }
 
@@ -101,15 +154,32 @@ class RestdocsRamlTaskTest extends Specification {
 """
     }
 
-    private def givenTask(String ramlVersion, Boolean separatePublicApi) {
-        Project project = ProjectBuilder.builder()
-                .withProjectDir(testProjectDir.root)
-                .build()
-        project.pluginManager.apply 'com.epages.restdocs-raml'
-        project.extensions.ramldoc.ramlVersion = ramlVersion
-        project.extensions.ramldoc.apiTitle = "mytitle"
-        project.extensions.ramldoc.apiBaseUri = "http://localhost/api"
-        project.extensions.ramldoc.separatePublicApi = separatePublicApi
-        restdocsRamlTask = project.tasks.ramldoc as RestdocsRamlTask
+    private def givenBuildFileWithoutConfig() {
+        buildFile << baseBuildFile
     }
+
+    private def givenBuildFileWithRamldocClosure() {
+        buildFile << baseBuildFile + """
+ramldoc {
+    apiTitle = '$apiTitle'
+    apiBaseUri = '$baseUri'
+    ramlVersion = "$ramlVersion"
+    separatePublicApi = $separatePublicApi
+}
+"""
+    }
+
+    def baseBuildFile = """
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+}
+
+plugins {
+    id 'java'
+    id 'com.epages.restdocs-raml'
+}
+"""
 }
