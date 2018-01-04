@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.2'
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.3'
         classpath 'com.bmuschko:gradle-docker-plugin:3.2.0'
     }
 }
@@ -39,7 +39,7 @@ dependencies {
     runtime 'com.h2database:h2'
     runtime 'org.atteo:evo-inflector:1.2.2'
 
-    testCompile 'com.epages:restdocs-raml:0.2.2'
+    testCompile 'com.epages:restdocs-raml:0.2.3'
     testCompile 'org.json:json:20170516'
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
@@ -48,7 +48,7 @@ dependencies {
 }
 
 ramldoc {
-    apiTitle = 'Notes API'
+    apiTitle = 'Notes'
     apiBaseUri = 'http://localhost:8080/'
     ramlVersion = "1.0"
 }
