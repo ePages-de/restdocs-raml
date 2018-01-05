@@ -44,7 +44,7 @@ buildscript {
     }
     dependencies {
         //..
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.3' //2
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.2.4' //2
     }
 }
 //..
@@ -59,7 +59,7 @@ repositories { //4
 
 dependencies {
     //..
-    testCompile 'com.epages:restdocs-raml:0.2.3' //5
+    testCompile 'com.epages:restdocs-raml:0.2.4' //5
     testCompile 'org.json:json:20170516' //6
 }
 
@@ -210,7 +210,7 @@ mockMvc.perform(get("/notes/{id}", noteId))
 
 ### Compatibility with Spring REST Docs
 
-`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.3`.
+`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.4`.
 
 We adopted the Spring REST Docs sample project that shows the usage of `WebTestClient` to use `restdocs-raml` to verify the compatibility.
 See https://github.com/mduesterhoeft/spring-restdocs/tree/master/samples/web-test-client.
