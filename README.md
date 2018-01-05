@@ -208,9 +208,39 @@ Note how we use the `urlTemplate` to build the request with [`RestDocumentationR
 mockMvc.perform(get("/notes/{id}", noteId))
  ```
 
-### Compatibility with Spring REST Docs
+### Migrate existing tests
 
-`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.5`.
+For convenience when applying `restdocs-raml` to an existing project that uses Spring REST Docs, we introduced [RamlDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlDocumentation.java).
+
+In you tests you can just replace calls to `MockMvcRestDocumentation.document` with the corresponding variant of `RamlDocumentation.document`.
+
+It will always execute the specified snippets and also add a `RamlResourceSnippet` equipped with the input from your snippets.
+
+Here is an example:
+
+```java
+resultActions
+  .andDo(
+    RamlDocumentation.document(operationName,
+      requestFields(fieldDescriptors().getFieldDescriptors()),
+      responseFields(
+        fieldWithPath("comment").description("the comment"),
+        fieldWithPath("flag").description("the flag"),
+        fieldWithPath("count").description("the count"),
+        fieldWithPath("id").description("id"),
+        fieldWithPath("_links").ignored()
+      ),
+      links(linkWithRel("self").description("some"))
+  )
+);
+```
+
+This will do exactly the same as using `MockMvcRestDocumentation.document` without `restdocs-raml`.
+Additionally it will additionally add a `RamlResourceSnippet` with the descriptors you provided in the `RequestFieldsSnippet`, `ResponseFieldsSnippet`, and `LinksSnippet`.
+
+### Compatibility with Spring Boot 2 (WebTestClient)
+
+`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.3`.
 
 We adopted the Spring REST Docs sample project that shows the usage of `WebTestClient` to use `restdocs-raml` to verify the compatibility.
 See https://github.com/mduesterhoeft/spring-restdocs/tree/master/samples/web-test-client.

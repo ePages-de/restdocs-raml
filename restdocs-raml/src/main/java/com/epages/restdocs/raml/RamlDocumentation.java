@@ -1,5 +1,11 @@
 package com.epages.restdocs.raml;
 
+import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.hypermedia.LinksSnippet;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -14,12 +20,10 @@ import org.springframework.restdocs.request.PathParametersSnippet;
 import org.springframework.restdocs.request.RequestParametersSnippet;
 import org.springframework.restdocs.snippet.Snippet;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
-
+/**
+ * Convenience class to migrate to restdocs-raml in a non-invasive way.
+ * It it a wrapper and replacement for MockMvcRestDocumentation that transparently adds a RamlResourceSnippet with the descriptors provided in the given snippets.
+ */
 public class RamlDocumentation {
 
     public static RestDocumentationResultHandler document(String identifier,
