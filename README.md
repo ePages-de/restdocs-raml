@@ -236,7 +236,7 @@ resultActions
 ```
 
 This will do exactly the same as using `MockMvcRestDocumentation.document` without `restdocs-raml`.
-Additionally it will additionally add a `RamlResourceSnippet` with the descriptors you provided in the `RequestFieldsSnippet`, `ResponseFieldsSnippet`, and `LinksSnippet`.
+Additionally it will add a `RamlResourceSnippet` with the descriptors you provided in the `RequestFieldsSnippet`, `ResponseFieldsSnippet`, and `LinksSnippet`.
 
 ### Compatibility with Spring Boot 2 (WebTestClient)
 
