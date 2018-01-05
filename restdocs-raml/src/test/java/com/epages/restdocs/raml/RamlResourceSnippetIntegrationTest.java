@@ -57,9 +57,9 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     @Autowired
     private WebApplicationContext context;
 
-    private String operationName;
+    protected String operationName;
 
-    private ResultActions resultActions;
+    protected ResultActions resultActions;
 
     @Before
     public void setUp() {
@@ -106,18 +106,22 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     private void whenRamlResourceSnippetDocumentedWithRequestAndResponseFields() throws Exception {
         resultActions
                 .andDo(
-                        document(operationName, ramlResource(RamlResourceSnippetParameters.builder()
-                                .requestFields(fieldDescriptors())
-                                .responseFields(fieldDescriptors().and(fieldWithPath("id").description("id")))
-                                .pathParameters(
-                                        parameterWithName("someId").description("some id").type(STRING),
-                                        parameterWithName("otherId").description("otherId id").type(INTEGER))
-                                .links(linkWithRel("self").description("some"))
-                                .build()))
+                        document(operationName, buildFullRamlResourceSnippet())
                 );
     }
 
-    private FieldDescriptors fieldDescriptors() {
+    protected RamlResourceSnippet buildFullRamlResourceSnippet() {
+        return ramlResource(RamlResourceSnippetParameters.builder()
+                .requestFields(fieldDescriptors())
+                .responseFields(fieldDescriptors().and(fieldWithPath("id").description("id")))
+                .pathParameters(
+                        parameterWithName("someId").description("some id").type(STRING),
+                        parameterWithName("otherId").description("otherId id").type(INTEGER))
+                .links(linkWithRel("self").description("some"))
+                .build());
+    }
+
+    protected FieldDescriptors fieldDescriptors() {
         return RamlResourceDocumentation.fields(
                 fieldWithPath("comment").description("the comment"),
                 fieldWithPath("flag").description("the flag"),
@@ -125,7 +129,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         );
     }
 
-    private void givenEndpointInvoked() throws Exception {
+    protected void givenEndpointInvoked() throws Exception {
         resultActions = mockMvc.perform(post("/some/{someId}/other/{otherId}", "id", 1)
                 .contentType(APPLICATION_JSON)
                 .content("{\n" +
