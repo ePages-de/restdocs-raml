@@ -49,7 +49,8 @@ import lombok.SneakyThrows;
 public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTestTrait {
 
     @Rule
-    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+
+    public JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
 
     @Autowired
     private MockMvc mockMvc;

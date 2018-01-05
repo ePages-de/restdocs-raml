@@ -1,15 +1,18 @@
 package com.epages.restdocs.raml;
 
-import lombok.SneakyThrows;
+import static org.assertj.core.api.BDDAssertions.then;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.BDDAssertions.then;
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import lombok.SneakyThrows;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest
@@ -45,7 +48,8 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("flag").description("the flag"),
                         fieldWithPath("count").description("the count"),
                         fieldWithPath("id").description("id"),
-                        subsectionWithPath("_links").ignored()
+                        //subsectionWithPath("_links").ignored()
+                        fieldWithPath("_links").ignored()
                     ),
                     links(linkWithRel("self").description("some"))
                 )
@@ -70,8 +74,6 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
         then(generatedCurlAdocFile()).exists();
         then(generatedHttpRequestAdocFile()).exists();
         then(generatedHttpResponseAdocFile()).exists();
-        then(generatedRequestBodyAdocFile()).exists();
-        then(generatedResponseBodyAdocFile()).exists();
     }
 
 }

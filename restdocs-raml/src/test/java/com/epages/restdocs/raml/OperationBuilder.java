@@ -3,7 +3,6 @@ package com.epages.restdocs.raml;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.springframework.restdocs.operation.OperationRequestPartFactory;
 import org.springframework.restdocs.operation.OperationResponse;
 import org.springframework.restdocs.operation.OperationResponseFactory;
 import org.springframework.restdocs.operation.Parameters;
-import org.springframework.restdocs.operation.RequestCookie;
 import org.springframework.restdocs.operation.StandardOperation;
 import org.springframework.restdocs.snippet.RestDocumentationContextPlaceholderResolverFactory;
 import org.springframework.restdocs.snippet.StandardWriterResolver;
@@ -131,8 +129,6 @@ public class OperationBuilder {
 
 		private List<OperationRequestPartBuilder> partBuilders = new ArrayList<>();
 
-		private Collection<RequestCookie> cookies = new ArrayList<>();
-
 		private OperationRequestBuilder(String uri) {
 			this.requestUri = URI.create(uri);
 		}
@@ -143,7 +139,7 @@ public class OperationBuilder {
 				parts.add(builder.buildPart());
 			}
 			return new OperationRequestFactory().create(this.requestUri, this.method,
-					this.content, this.headers, this.parameters, parts, this.cookies);
+					this.content, this.headers, this.parameters, parts);
 		}
 
 		public Operation build() {
@@ -187,11 +183,6 @@ public class OperationBuilder {
 					name, content);
 			this.partBuilders.add(partBuilder);
 			return partBuilder;
-		}
-
-		public OperationRequestBuilder cookie(String name, String value) {
-			this.cookies.add(new RequestCookie(name, value));
-			return this;
 		}
 
 		/**

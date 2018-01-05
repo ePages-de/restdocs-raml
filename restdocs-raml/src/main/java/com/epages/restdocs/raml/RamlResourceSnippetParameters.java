@@ -2,7 +2,7 @@ package com.epages.restdocs.raml;
 
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PRIVATE;
-import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +36,8 @@ public class RamlResourceSnippetParameters {
         List<FieldDescriptor> combinedDescriptors = new ArrayList<>(getResponseFields());
         combinedDescriptors.addAll(
                 getLinks().stream()
-                        .map(l ->
-                                subsectionWithPath("_links." + l.getRel())
+                        .map(l -> //change to subsectionWithPath on spring-rest-docs 1.2
+                                fieldWithPath("_links." + l.getRel())
                                         .description(l.getDescription())
                                         .type(JsonFieldType.OBJECT)
                         )
