@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
-        classpath 'com.github.epages-de.restdocs-raml:restdocs-raml-gradle-plugin:go-back-to-restdocs-1-1-SNAPSHOT'
+        classpath 'com.github.epages-de.restdocs-raml:restdocs-raml-gradle-plugin:master-SNAPSHOT'
         classpath 'com.bmuschko:gradle-docker-plugin:3.2.0'
     }
 }
@@ -40,7 +40,7 @@ dependencies {
     runtime 'com.h2database:h2'
     runtime 'org.atteo:evo-inflector:1.2.2'
 
-    testCompile 'com.github.epages-de.restdocs-raml:restdocs-raml:go-back-to-restdocs-1-1-SNAPSHOT'
+    testCompile 'com.github.epages-de.restdocs-raml:restdocs-raml:master-SNAPSHOT'
     testCompile 'org.json:json:20170516'
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
