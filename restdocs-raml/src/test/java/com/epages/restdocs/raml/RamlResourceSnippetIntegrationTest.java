@@ -124,7 +124,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
 
     protected FieldDescriptors fieldDescriptors() {
         return RamlResourceDocumentation.fields(
-                fieldWithPath("comment").description("the comment"),
+                fieldWithPath("comment").description("the comment").optional(),
                 fieldWithPath("flag").description("the flag"),
                 fieldWithPath("count").description("the count")
         );

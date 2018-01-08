@@ -14,6 +14,7 @@ import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.request.ParameterDescriptor;
+import org.springframework.restdocs.snippet.Attributes.Attribute;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,14 +37,28 @@ public class RamlResourceSnippetParameters {
         List<FieldDescriptor> combinedDescriptors = new ArrayList<>(getResponseFields());
         combinedDescriptors.addAll(
                 getLinks().stream()
-                        .map(l -> //change to subsectionWithPath on spring-rest-docs 1.2
-                                fieldWithPath("_links." + l.getRel())
-                                        .description(l.getDescription())
-                                        .type(JsonFieldType.OBJECT)
-                        )
+                        .map(RamlResourceSnippetParameters::toFieldDescriptor)
                         .collect(Collectors.toList())
         );
         return combinedDescriptors;
+    }
+
+    private static FieldDescriptor toFieldDescriptor(LinkDescriptor linkDescriptor) {
+        FieldDescriptor descriptor = fieldWithPath("_links." + linkDescriptor.getRel()) //change to subsectionWithPath on spring-rest-docs 1.2
+                .description(linkDescriptor.getDescription())
+                .type(JsonFieldType.OBJECT)
+                .attributes(linkDescriptor.getAttributes().entrySet().stream()
+                        .map(e -> new Attribute(e.getKey(), e.getValue()))
+                        .toArray(Attribute[]::new));
+
+        if (linkDescriptor.isOptional()) {
+            descriptor = descriptor.optional();
+        }
+        if (linkDescriptor.isIgnored()) {
+            descriptor = descriptor.ignored();
+        }
+
+        return descriptor;
     }
 
     public static class RamlResourceSnippetParametersBuilder {

@@ -121,7 +121,9 @@ public class JsonSchemaFromFieldDescriptorsGenerator {
     }
 
     private void handleEndOfPath(ObjectSchema.Builder builder, String propertyName, FieldDescriptor fieldDescriptor) {
-        if (fieldDescriptor.getType().equals(JsonFieldType.OBJECT)) {
+        if (fieldDescriptor.isIgnored()) {
+            // We don't need to render anything
+        } else if (fieldDescriptor.getType().equals(JsonFieldType.OBJECT)) {
             builder.addPropertySchema(propertyName, ObjectSchema.builder()
                     .description((String) fieldDescriptor.getDescription())
                     .build());

@@ -1,11 +1,10 @@
 package com.epages.restdocs.raml;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +37,16 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
         thenRestdocsAndRamlFilesExist();
     }
 
+    @Test
+    @SneakyThrows
+    public void should_value_ignored_fields_and_links() {
+        givenEndpointInvoked();
+
+        assertThatCode(
+            this::whenDocumentedWithAllFieldsLinksIgnored
+        ).doesNotThrowAnyException();
+    }
+
     private void whenDocumentedWithRestdocsAndRaml() throws Exception {
         resultActions
             .andDo(
@@ -48,7 +57,6 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("flag").description("the flag"),
                         fieldWithPath("count").description("the count"),
                         fieldWithPath("id").description("id"),
-                        //subsectionWithPath("_links").ignored()
                         fieldWithPath("_links").ignored()
                     ),
                     links(linkWithRel("self").description("some"))
@@ -61,6 +69,23 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
             .andDo(
                 RamlDocumentation.document(operationName,
                                            buildFullRamlResourceSnippet())
+            );
+    }
+
+    private void whenDocumentedWithAllFieldsLinksIgnored() throws Exception {
+        resultActions
+            .andDo(
+                RamlDocumentation.document(operationName,
+                    requestFields(fieldDescriptors().getFieldDescriptors()),
+                    responseFields(
+                        fieldWithPath("comment").ignored(),
+                        fieldWithPath("flag").ignored(),
+                        fieldWithPath("count").ignored(),
+                        fieldWithPath("id").ignored(),
+                        fieldWithPath("_links").ignored()
+                    ),
+                    links(linkWithRel("self").optional().ignored())
+                )
             );
     }
 
