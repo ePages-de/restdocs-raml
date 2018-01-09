@@ -4,6 +4,7 @@ import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScala
 import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScalarType.STRING;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
@@ -97,6 +98,16 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         then(generatedResponseSchemaFile()).exists();
     }
 
+    @Test
+    @SneakyThrows
+    public void should_document_request_with_null_field() {
+        givenEndpointInvoked("null");
+
+        assertThatCode(
+            this::whenRamlResourceSnippetDocumentedWithRequestAndResponseFields
+        ).doesNotThrowAnyException();
+    }
+
     private void whenRamlResourceSnippetDocumentedWithoutParameters() throws Exception {
         resultActions
                 .andDo(
@@ -131,13 +142,17 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     }
 
     protected void givenEndpointInvoked() throws Exception {
+        givenEndpointInvoked("true");
+    }
+
+    protected void givenEndpointInvoked(String flagValue) throws Exception {
         resultActions = mockMvc.perform(post("/some/{someId}/other/{otherId}", "id", 1)
                 .contentType(APPLICATION_JSON)
-                .content("{\n" +
+                .content(String.format("{\n" +
                         "    \"comment\": \"some\",\n" +
-                        "    \"flag\": true,\n" +
+                        "    \"flag\": %s,\n" +
                         "    \"count\": 1\n" +
-                        "}"))
+                        "}", flagValue)))
                 .andExpect(status().isOk());
     }
 

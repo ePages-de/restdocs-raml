@@ -13,12 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import org.everit.json.schema.ArraySchema;
-import org.everit.json.schema.BooleanSchema;
-import org.everit.json.schema.NumberSchema;
-import org.everit.json.schema.ObjectSchema;
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.StringSchema;
+import org.everit.json.schema.*;
 import org.everit.json.schema.internal.JSONPrinter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -123,6 +118,10 @@ public class JsonSchemaFromFieldDescriptorsGenerator {
     private void handleEndOfPath(ObjectSchema.Builder builder, String propertyName, FieldDescriptor fieldDescriptor) {
         if (fieldDescriptor.isIgnored()) {
             // We don't need to render anything
+        } else if (fieldDescriptor.getType().equals(JsonFieldType.NULL)) {
+            builder.addPropertySchema(propertyName, NullSchema.builder()
+                    .description((String) fieldDescriptor.getDescription())
+                    .build());
         } else if (fieldDescriptor.getType().equals(JsonFieldType.OBJECT)) {
             builder.addPropertySchema(propertyName, ObjectSchema.builder()
                     .description((String) fieldDescriptor.getDescription())
