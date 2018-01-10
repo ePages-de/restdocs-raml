@@ -145,7 +145,11 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
     }
 
     private String getUriPath(Operation operation) {
-        return UriComponentsBuilder.fromUriString(((String) operation.getAttributes().get(ATTRIBUTE_NAME_URL_TEMPLATE))).build().getPath();
+        String urlTemplate = (String) operation.getAttributes().get(ATTRIBUTE_NAME_URL_TEMPLATE);
+        if (StringUtils.isEmpty(urlTemplate)) {
+            throw new MissingUrlTemplateException();
+        }
+        return UriComponentsBuilder.fromUriString(urlTemplate).build().getPath();
     }
 
     static class RamlTemplateFormat implements TemplateFormat {
@@ -158,6 +162,12 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
         @Override
         public String getFileExtension() {
             return "raml";
+        }
+    }
+
+    static class MissingUrlTemplateException extends RuntimeException {
+        public MissingUrlTemplateException() {
+            super("Missing URL template - please use RestDocumentationRequestBuilders with urlTemplate to construct the request");
         }
     }
 }

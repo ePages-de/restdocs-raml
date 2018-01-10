@@ -4,6 +4,7 @@ import static com.epages.restdocs.raml.ParameterDescriptorWithRamlType.RamlScala
 import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithName;
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.BDDAssertions.thenThrownBy;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.restdocs.generate.RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE;
@@ -17,6 +18,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.restdocs.operation.Operation;
+
+import com.epages.restdocs.raml.RamlResourceSnippet.MissingUrlTemplateException;
 
 import lombok.SneakyThrows;
 
@@ -90,6 +93,14 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
         then(generatedResponseSchemaFile()).doesNotExist();
     }
 
+    @Test
+    @SneakyThrows
+    public void should_fail_on_missing_url_template() {
+        givenOperationWithoutUrlTemplate();
+
+        thenThrownBy(this::whenRamlSnippetInvoked).isInstanceOf(MissingUrlTemplateException.class);
+    }
+
     private void givenPathParameterDescriptors() {
         parametersBuilder.pathParameters(parameterWithName("id").type(STRING).description("an id"));
     }
@@ -116,6 +127,17 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     private void givenOperationWithoutBody() {
         final OperationBuilder operationBuilder = new OperationBuilder("test", temporaryFolder.getRoot())
                 .attribute(ATTRIBUTE_NAME_URL_TEMPLATE, "http://localhost:8080/some/{id}");
+        operationBuilder
+                .request("http://localhost:8080/some/123")
+                .method("POST");
+        operationBuilder
+                .response()
+                .status(201);
+        operation = operationBuilder.build();
+    }
+
+    private void givenOperationWithoutUrlTemplate() {
+        final OperationBuilder operationBuilder = new OperationBuilder("test", temporaryFolder.getRoot());
         operationBuilder
                 .request("http://localhost:8080/some/123")
                 .method("POST");
