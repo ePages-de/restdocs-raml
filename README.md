@@ -73,7 +73,7 @@ ramldoc { //7
 1. add jcenter repository to `buildscript` to resolve the `restdocs-raml-gradle-plugin`
 2. add the dependency to `restdocs-raml-gradle-plugin`
 3. apply `restdocs-raml-gradle-plugin`
-4. add repositories used for dependency resolution. We need `jcenter` for `restdocs-raml` and `jitpack` for one of the depencencies we use internally
+4. add repositories used for dependency resolution. We need `jcenter` for `restdocs-raml` and `jitpack` for one of the dependencies we use internally
 5. add the actual `restdocs-raml` dependency to the test scope
 6. `spring-boot` specifies an old version of `org.json:json`. We use [everit-org/json-schema](https://github.com/everit-org/json-schema) to generate json schema files. This project depends on a newer version of `org.json:json`. As versions from BOM always override transitive versions coming in through maven dependencies, you need to add an explicit dependency to `org.json:json:20170516`
 7. optional - add configuration options for restdocs-raml-gradle-plugin see [Gradle plugin configuration](#gradle-plugin-configuration)
