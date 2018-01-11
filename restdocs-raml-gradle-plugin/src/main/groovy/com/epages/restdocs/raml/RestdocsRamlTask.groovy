@@ -121,7 +121,7 @@ class RamlFragments {
     }
 
     String getGroupFileName(boolean ignorePrivate) {
-        def fileNamePrefix = commonPath
+        def fileNamePrefix = commonPath.equals("/") ? "root" : commonPath
                 .replaceFirst("/", "")
                 .replaceAll("\\{", "")
                 .replaceAll("}", "")
@@ -169,12 +169,14 @@ class RamlFragment {
     }
 
     String firstPathPart() {
-        "/" + path.split("/").find { !it.isEmpty() }
+        String firstPart = path.split("/").find { !it.isEmpty() }
+        firstPart == null ? '/' : "/$firstPart"
     }
 
     String remainingPath(String prefix) {
         path.replaceAll(Pattern.quote(prefix), "")
     }
+
     String toString() {
         "path: $path\n remainingContent: $remainingContent\n"
     }

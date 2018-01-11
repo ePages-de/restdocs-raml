@@ -121,6 +121,7 @@ class RestdocsRamlTaskTest extends Specification {
             assert lines.any { it.startsWith("baseUri:") }
         }
         assert lines.any() { it == "/carts: !include carts.raml" }
+        assert lines.any() { it == "/: !include root.raml" }
     }
 
     private def givenRequestBodyJsonFile() {
@@ -149,6 +150,11 @@ class RestdocsRamlTaskTest extends Specification {
 """
         new File(testProjectDir.newFolder("build", "generated-snippets", "carts-delete"), "raml-resource.raml") << """/carts/{cartId}:
   delete:
+    description: "TODO - figure out how to set"
+    securedBy: ["pymt:u"]
+"""
+        new File(testProjectDir.newFolder("build", "generated-snippets", "index-get"), "raml-resource.raml") << """/:
+  get:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
 """
