@@ -85,6 +85,14 @@ public class ApiDocumentation {
 	}
 
 	@Test
+	public void index() throws Exception {
+		resultActions = mockMvc.perform(get("/"));
+
+		resultActions
+				.andExpect(status().isOk())
+				.andDo(document("index", ramlResource()));
+	}
+	@Test
 	public void notesListExample() throws Exception {
 		createNote("REST maturity model", "http://martinfowler.com/articles/richardsonMaturityModel.html");
 		createNote("Hypertext Application Language (HAL)", "http://stateless.co/hal_specification.html");

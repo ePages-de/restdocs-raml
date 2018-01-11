@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.notes.TagResourceAssembler.TagResource;
 
 @RestController
-@RequestMapping("tags")
+@RequestMapping("/tags")
 public class TagsController {
 
 	private final TagRepository repository;
