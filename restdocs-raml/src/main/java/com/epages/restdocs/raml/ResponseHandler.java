@@ -1,6 +1,7 @@
 package com.epages.restdocs.raml;
 
 import static java.util.Collections.emptyMap;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +15,13 @@ import org.springframework.util.StringUtils;
 
 public class ResponseHandler implements OperationHandler, FileNameTrait {
 
-    static final String RESPONSE_BODY_FILE_NAME_SUFFIX = "-response.json";
-
     public Map<String, Object> generateModel(Operation operation, RamlResourceSnippetParameters parameters) {
         final OperationResponse response = operation.getResponse();
         if (!StringUtils.isEmpty(response.getContentAsString())) {
             Map<String, Object> model = new HashMap<>();
             model.put("responseBodyFileName", getResponseFileName(operation.getName()));
             model.put("responseBodyPresent", true);
-            model.put("contentTypeResponse", response.getHeaders().getContentType().getType() + "/" + response.getHeaders().getContentType().getSubtype());
+            model.put("contentTypeResponse", getContentTypeOrDefault(response));
             if (!parameters.getResponseFields().isEmpty()) {
                 validateResponseFieldsAndInferTypeInformation(operation, parameters);
                 model.put("responseFieldsPresent", true);
@@ -33,6 +32,14 @@ public class ResponseHandler implements OperationHandler, FileNameTrait {
             return model;
         }
         return emptyMap();
+    }
+
+    private String getContentTypeOrDefault(OperationResponse response) {
+        if (response.getHeaders().getContentType() != null) {
+            return response.getHeaders().getContentType().getType() + "/" + response.getHeaders().getContentType().getSubtype();
+        } else {
+            return APPLICATION_JSON_VALUE;
+        }
     }
 
     private void validateResponseFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {

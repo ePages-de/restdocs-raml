@@ -1,6 +1,7 @@
 package com.epages.restdocs.raml;
 
 import static java.util.Collections.emptyMap;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ public class RequestHandler implements OperationHandler, FileNameTrait {
             Map<String, Object> model = new HashMap<>();
             model.put("requestBodyFileName", getRequestFileName(operation.getName()));
             model.put("requestBodyPresent", true);
-            model.put("contentTypeRequest", request.getHeaders().getContentType().getType() + "/" + request.getHeaders().getContentType().getSubtype());
+            model.put("contentTypeRequest", getContentTypeOrDefault(request));
             if (!parameters.getRequestFields().isEmpty()) {
                 validateRequestFieldsAndInferTypeInformation(operation, parameters);
                 model.put("requestFieldsPresent", true);
@@ -32,6 +33,14 @@ public class RequestHandler implements OperationHandler, FileNameTrait {
             return model;
         }
         return emptyMap();
+    }
+
+    private String getContentTypeOrDefault(OperationRequest request) {
+        if (request.getHeaders().getContentType() != null) {
+            return request.getHeaders().getContentType().getType() + "/" + request.getHeaders().getContentType().getSubtype();
+        } else {
+            return APPLICATION_JSON_VALUE;
+        }
     }
 
     private void validateRequestFieldsAndInferTypeInformation(Operation operation, RamlResourceSnippetParameters parameters) {

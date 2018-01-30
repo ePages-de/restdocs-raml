@@ -64,6 +64,16 @@ public class ResponseHandlerTest {
         then(model).containsEntry("responseSchemaFileName", "test-schema-response.json");
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void should_default_content_type_to_json() {
+        givenResponseWithJsonBodyWithoutContentType();
+
+        whenModelGeneratedWithFieldDescriptors(fieldWithPath("comment").description("some"));
+
+        then(model.get("contentTypeResponse")).isEqualTo(APPLICATION_JSON_VALUE);
+    }
+
     private void whenModelGenerated() {
         model = responseHandler.generateModel(operation, RamlResourceSnippetParameters.builder().build());
     }
@@ -78,6 +88,14 @@ public class ResponseHandlerTest {
                 .response()
                 .status(200)
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .content("{\"comment\": \"some\"}")
+                .build();
+    }
+
+    private void givenResponseWithJsonBodyWithoutContentType() {
+        operation = new OperationBuilder()
+                .response()
+                .status(200)
                 .content("{\"comment\": \"some\"}")
                 .build();
     }

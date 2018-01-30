@@ -54,7 +54,6 @@ public class RequestHandlerTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void should_add_schema_file() {
         givenRequestWithJsonBody();
 
@@ -62,6 +61,16 @@ public class RequestHandlerTest {
 
         then(model).containsEntry("requestFieldsPresent", true);
         then(model).containsEntry("requestSchemaFileName", "test-schema-request.json");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void should_default_content_type_to_application_json() {
+        givenRequestWithJsonBodyWithoutContentType();
+
+        whenModelGeneratedWithFieldDescriptors(fieldWithPath("comment").description("some"));
+
+        then(model.get("contentTypeRequest")).isEqualTo(APPLICATION_JSON_VALUE);
     }
 
     private void whenModelGenerated() {
@@ -78,6 +87,14 @@ public class RequestHandlerTest {
                 .request("http://localhost:8080/some/123")
                 .method("POST")
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+                .content("{\"comment\": \"some\"}")
+                .build();
+    }
+
+    private void givenRequestWithJsonBodyWithoutContentType() {
+        operation = new OperationBuilder()
+                .request("http://localhost:8080/some/123")
+                .method("POST")
                 .content("{\"comment\": \"some\"}")
                 .build();
     }
