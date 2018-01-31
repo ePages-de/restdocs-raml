@@ -12,8 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.everit.json.schema.*;
+import org.everit.json.schema.ArraySchema;
+import org.everit.json.schema.BooleanSchema;
+import org.everit.json.schema.NullSchema;
+import org.everit.json.schema.NumberSchema;
+import org.everit.json.schema.ObjectSchema;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.StringSchema;
 import org.everit.json.schema.internal.JSONPrinter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.restdocs.payload.FieldDescriptor;
@@ -29,12 +36,50 @@ public class JsonSchemaFromFieldDescriptorsGenerator {
     }
 
     public String generateSchema(List<FieldDescriptor> fieldDescriptors, String title) {
-        List<JsonFieldPath> jsonFieldPaths = fieldDescriptors.stream().map(JsonFieldPath::compile).collect(toList());
+        List<JsonFieldPath> jsonFieldPaths = distinct(fieldDescriptors).stream()
+                .map(JsonFieldPath::compile)
+                .collect(toList());
 
         Schema schema = traverse(emptyList(), jsonFieldPaths, (ObjectSchema.Builder) ObjectSchema.builder().title(title));
 
         return toFormattedString(unWrapRootArray(jsonFieldPaths, schema));
     }
+
+    /**
+     * Make sure that the paths of the FieldDescriptors are distinct
+     * If we find multiple descriptors for the same path that are completely equal we take the first one.
+     * @throws MultipleNonEqualFieldDescriptors in case we find multiple descriptors for the same path that are not equal
+     */
+    private List<FieldDescriptor> distinct(List<FieldDescriptor> fieldDescriptors) {
+        return fieldDescriptors.stream()
+                .collect(Collectors.groupingBy(FieldDescriptor::getPath))
+                .values().stream()
+                .map(this::reduceToSingleIfAllEqual)
+                .collect(toList())
+        ;
+    }
+
+    private FieldDescriptor reduceToSingleIfAllEqual(List<FieldDescriptor> fieldDescriptors) {
+        if (fieldDescriptors.size() == 1) {
+            return fieldDescriptors.get(0);
+        }
+        FieldDescriptor first = fieldDescriptors.get(0);
+        final boolean hasDifferentDiscriptors = fieldDescriptors.subList(1, fieldDescriptors.size()).stream()
+                .anyMatch(fieldDescriptor -> !equalsOnFields(first, fieldDescriptor));
+        if (hasDifferentDiscriptors) {
+            throw new MultipleNonEqualFieldDescriptors(first.getPath());
+        } else {
+            return first;
+        }
+    }
+
+    private boolean equalsOnFields(FieldDescriptor f1, FieldDescriptor f2) {
+        return f1.getPath().equals(f2.getPath())
+                && f1.getType().equals(f2.getType())
+                && f1.isOptional() == f2.isOptional()
+                && f1.isIgnored() == f2.isIgnored();
+    }
+
 
     private Schema unWrapRootArray(List<JsonFieldPath> jsonFieldPaths, Schema schema) {
         if (schema instanceof ObjectSchema) {
@@ -144,6 +189,12 @@ public class JsonSchemaFromFieldDescriptorsGenerator {
                     .build());
         } else {
             throw new IllegalArgumentException("unknown field type " + fieldDescriptor.getType());
+        }
+    }
+
+    static class MultipleNonEqualFieldDescriptors extends RuntimeException {
+        public MultipleNonEqualFieldDescriptors(String path) {
+            super(String.format("Found multiple FieldDescriptors for '%s' with different values", path));
         }
     }
 

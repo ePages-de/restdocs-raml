@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.springframework.restdocs.payload.FieldDescriptor;
 
+import com.epages.restdocs.raml.jsonschema.JsonSchemaFromFieldDescriptorsGenerator.MultipleNonEqualFieldDescriptors;
 import com.github.fge.jackson.JsonLoader;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
@@ -99,15 +100,6 @@ public class JsonSchemaFromFieldDescriptorsGeneratorTest {
                 "}");
     }
 
-    @SneakyThrows
-    private void thenSchemaIsValid() {
-
-        final ProcessingReport report = JsonSchemaFactory.byDefault()
-                .getSyntaxValidator()
-                .validateSchema(JsonLoader.fromString(schemaString));
-        then(report.isSuccess()).describedAs("schema invalid - validation failures: %s", report).isTrue();
-    }
-
     @Test
     public void should_generate_schema_for_top_level_array() {
         givenFieldDescriptorWithTopLevelArray();
@@ -138,6 +130,31 @@ public class JsonSchemaFromFieldDescriptorsGeneratorTest {
         thenThrownBy(this::whenSchemaGenerated).isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    public void should_handle_duplicate_fields() {
+        givenEqualFieldDescriptorsWithSamePath();
+
+        whenSchemaGenerated();
+
+        thenSchemaIsValid();
+    }
+
+    @Test
+    public void should_fail_on_duplicate_fields_with_different_properties() {
+        givenDifferentFieldDescriptorsWithSamePath();
+
+        thenThrownBy(this::whenSchemaGenerated).isInstanceOf(MultipleNonEqualFieldDescriptors.class);
+    }
+
+    @SneakyThrows
+    private void thenSchemaIsValid() {
+
+        final ProcessingReport report = JsonSchemaFactory.byDefault()
+                .getSyntaxValidator()
+                .validateSchema(JsonLoader.fromString(schemaString));
+        then(report.isSuccess()).describedAs("schema invalid - validation failures: %s", report).isTrue();
+    }
+
     private void whenSchemaGenerated() {
         schemaString = generator.generateSchema(fieldDescriptors);
         schema = SchemaLoader.load(new JSONObject(schemaString));
@@ -152,6 +169,21 @@ public class JsonSchemaFromFieldDescriptorsGeneratorTest {
 
     private void givenFieldDescriptorWithInvalidType() {
         fieldDescriptors = singletonList(fieldWithPath("id").description("some").type("invalid-type"));
+    }
+
+    private void givenEqualFieldDescriptorsWithSamePath() {
+        fieldDescriptors = Arrays.asList(
+                fieldWithPath("id").description("some").type(STRING),
+                fieldWithPath("id").description("some").type(STRING)
+        );
+    }
+
+    private void givenDifferentFieldDescriptorsWithSamePath() {
+        fieldDescriptors = Arrays.asList(
+                fieldWithPath("id").description("some").type(STRING),
+                fieldWithPath("id").description("some").type(STRING),
+                fieldWithPath("id").description("some").type(STRING).optional()
+        );
     }
 
     private void givenFieldDescriptors() {
