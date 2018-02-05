@@ -15,7 +15,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -32,16 +31,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.restdocs.constraints.ConstraintDescriptions;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.epages.restdocs.raml.ConstrainedFields;
 import com.epages.restdocs.raml.RamlResourceSnippetParameters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -380,20 +378,4 @@ public class ApiDocumentation {
 		tag.setName(name);
 		this.tagRepository.save(tag);
 	}
-
-	private static class ConstrainedFields {
-
-		private final ConstraintDescriptions constraintDescriptions;
-
-		ConstrainedFields(Class<?> input) {
-			this.constraintDescriptions = new ConstraintDescriptions(input);
-		}
-
-		private FieldDescriptor withPath(String path) {
-			return fieldWithPath(path).attributes(key("constraints").value(StringUtils
-					.collectionToDelimitedString(this.constraintDescriptions
-							.descriptionsForProperty(path), ". ")));
-		}
-	}
-
 }
