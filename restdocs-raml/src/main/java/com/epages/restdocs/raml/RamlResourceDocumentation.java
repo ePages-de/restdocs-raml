@@ -12,6 +12,10 @@ public abstract class RamlResourceDocumentation {
         return new RamlResourceSnippet(RamlResourceSnippetParameters.builder().build());
     }
 
+    public static RamlResourceSnippet ramlResource(String description) {
+        return new RamlResourceSnippet(RamlResourceSnippetParameters.builder().description(description).build());
+    }
+
     public static FieldDescriptors fields(FieldDescriptor... fieldDescriptors) {
         return new FieldDescriptors(fieldDescriptors);
     }

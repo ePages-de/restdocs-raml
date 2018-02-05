@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,6 +15,7 @@ public class NoteInput {
 	@NotBlank
 	private final String title;
 
+	@Length(max = 1024)
 	private final String body;
 
 	private final List<URI> tagUris;

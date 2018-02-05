@@ -90,8 +90,11 @@ public class ApiDocumentation {
 
 		resultActions
 				.andExpect(status().isOk())
-				.andDo(document("index", ramlResource()));
+				.andDo(document("index", ramlResource(RamlResourceSnippetParameters.builder()
+                        .description("Index resource pointing to all the resources the API offers")
+                        .build())));
 	}
+
 	@Test
 	public void notesListExample() throws Exception {
 		createNote("REST maturity model", "http://martinfowler.com/articles/richardsonMaturityModel.html");
@@ -360,7 +363,7 @@ public class ApiDocumentation {
 	}
 
 	private void givenTagRequest() {
-		tag = new HashMap<String, String>();
+		tag = new HashMap<>();
 		tag.put("name", "REST");
 	}
 

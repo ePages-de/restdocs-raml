@@ -1,5 +1,8 @@
 package com.epages.restdocs.raml.jsonschema;
 
+import static com.epages.restdocs.raml.jsonschema.ConstraintResolver.isRequired;
+import static com.epages.restdocs.raml.jsonschema.ConstraintResolver.maxLengthString;
+import static com.epages.restdocs.raml.jsonschema.ConstraintResolver.minLengthString;
 import static com.epages.restdocs.raml.jsonschema.JsonFieldPath.isArraySegment;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.groupingBy;
@@ -161,42 +164,49 @@ public class JsonSchemaFromFieldDescriptorsGenerator {
     }
 
     private void handleEndOfPath(ObjectSchema.Builder builder, String propertyName, FieldDescriptor fieldDescriptor) {
+
         if (fieldDescriptor.isIgnored()) {
             // We don't need to render anything
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.NULL) || fieldDescriptor.getType().equals(JsonFieldType.VARIES)) {
-            builder.addPropertySchema(propertyName, NullSchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.OBJECT)) {
-            builder.addPropertySchema(propertyName, ObjectSchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.ARRAY)) {
-            builder.addPropertySchema(propertyName, ArraySchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.BOOLEAN)) {
-            builder.addPropertySchema(propertyName, BooleanSchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.NUMBER)) {
-            builder.addPropertySchema(propertyName, NumberSchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
-        } else if (fieldDescriptor.getType().equals(JsonFieldType.STRING)) {
-            builder.addPropertySchema(propertyName, StringSchema.builder()
-                    .description((String) fieldDescriptor.getDescription())
-                    .build());
         } else {
-            throw new IllegalArgumentException("unknown field type " + fieldDescriptor.getType());
+            if (isRequired(fieldDescriptor)) {
+                builder.addRequiredProperty(propertyName);
+            }
+            if (fieldDescriptor.getType().equals(JsonFieldType.NULL) || fieldDescriptor.getType().equals(JsonFieldType.VARIES)) {
+                builder.addPropertySchema(propertyName, NullSchema.builder()
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+            } else if (fieldDescriptor.getType().equals(JsonFieldType.OBJECT)) {
+                builder.addPropertySchema(propertyName, ObjectSchema.builder()
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+
+            } else if (fieldDescriptor.getType().equals(JsonFieldType.ARRAY)) {
+                builder.addPropertySchema(propertyName, ArraySchema.builder()
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+            } else if (fieldDescriptor.getType().equals(JsonFieldType.BOOLEAN)) {
+                builder.addPropertySchema(propertyName, BooleanSchema.builder()
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+            } else if (fieldDescriptor.getType().equals(JsonFieldType.NUMBER)) {
+                builder.addPropertySchema(propertyName, NumberSchema.builder()
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+            } else if (fieldDescriptor.getType().equals(JsonFieldType.STRING)) {
+                builder.addPropertySchema(propertyName, StringSchema.builder()
+                        .minLength(minLengthString(fieldDescriptor))
+                        .maxLength(maxLengthString(fieldDescriptor))
+                        .description((String) fieldDescriptor.getDescription())
+                        .build());
+            } else {
+                throw new IllegalArgumentException("unknown field type " + fieldDescriptor.getType());
+            }
         }
     }
 
     static class MultipleNonEqualFieldDescriptors extends RuntimeException {
-        public MultipleNonEqualFieldDescriptors(String path) {
+        MultipleNonEqualFieldDescriptors(String path) {
             super(String.format("Found multiple FieldDescriptors for '%s' with different values", path));
         }
     }
-
-
 }

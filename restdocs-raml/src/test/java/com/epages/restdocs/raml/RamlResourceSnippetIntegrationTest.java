@@ -19,6 +19,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.File;
 import java.util.UUID;
 
+import javax.validation.constraints.NotNull;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,6 +87,18 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
 
     @Test
     @SneakyThrows
+    public void should_document_request_with_description() {
+        givenEndpointInvoked();
+
+        whenRamlResourceSnippetDocumentedWithDescription();
+
+        then(generatedRamlFragmentFile()).exists();
+        then(generatedRequestJsonFile()).exists();
+        then(generatedResponseJsonFile()).exists();
+    }
+
+    @Test
+    @SneakyThrows
     public void should_document_request_with_fields() {
         givenEndpointInvoked();
 
@@ -110,16 +124,17 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
 
     private void whenRamlResourceSnippetDocumentedWithoutParameters() throws Exception {
         resultActions
-                .andDo(
-                        document(operationName, ramlResource())
-                );
+                .andDo(document(operationName, ramlResource()));
+    }
+
+    private void whenRamlResourceSnippetDocumentedWithDescription() throws Exception {
+        resultActions
+                .andDo(document(operationName, ramlResource("A description")));
     }
 
     private void whenRamlResourceSnippetDocumentedWithRequestAndResponseFields() throws Exception {
         resultActions
-                .andDo(
-                        document(operationName, buildFullRamlResourceSnippet())
-                );
+                .andDo(document(operationName, buildFullRamlResourceSnippet()));
     }
 
     protected RamlResourceSnippet buildFullRamlResourceSnippet() {
@@ -134,10 +149,11 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     }
 
     protected FieldDescriptors fieldDescriptors() {
+        final ConstrainedFields fields = new ConstrainedFields(TestDateHolder.class);
         return RamlResourceDocumentation.fields(
-                fieldWithPath("comment").description("the comment").optional(),
-                fieldWithPath("flag").description("the flag"),
-                fieldWithPath("count").description("the count")
+                fields.withPath("comment").description("the comment").optional(),
+                fields.withPath("flag").description("the flag"),
+                fields.withMappedPath("count", "count").description("the count")
         );
     }
 
@@ -190,6 +206,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     @RequiredArgsConstructor
     @Getter
     static class TestDateHolder {
+        @NotNull
         private final String comment;
         private final boolean flag;
         private int count;

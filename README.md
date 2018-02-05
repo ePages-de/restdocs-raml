@@ -10,6 +10,25 @@ This is an extension that adds [RAML (RESTful API Modeling Language)](https://ra
 
 Check out our [introductory blog post](https://developer.epages.com/blog/api-experience/restful-api-documentation-with-spring-rest-docs-and-raml/) for a quick overview. 
 
+<!-- TOC depthFrom:2 -->
+
+- [Motivation](#motivation)
+- [Getting started](#getting-started)
+    - [Project structure](#project-structure)
+    - [Build configuration](#build-configuration)
+    - [Usage with Spring REST Docs](#usage-with-spring-rest-docs)
+    - [Documenting Bean Validation constraints](#documenting-bean-validation-constraints)
+    - [Migrate existing Spring REST Docs tests](#migrate-existing-spring-rest-docs-tests)
+    - [Running the gradle plugin](#running-the-gradle-plugin)
+    - [Gradle plugin configuration](#gradle-plugin-configuration)
+- [Generate HTML](#generate-html)
+- [Compatibility with Spring Boot 2 (WebTestClient)](#compatibility-with-spring-boot-2-webtestclient)
+- [Limitations](#limitations)
+    - [Rest Assured](#rest-assured)
+    - [Maven plugin](#maven-plugin)
+
+<!-- /TOC -->
+
 ## Motivation
 
 [Spring REST Docs](https://projects.spring.io/spring-restdocs/) is a great tool to produce documentation for your RESTful services that is accurate and readable.
@@ -208,13 +227,23 @@ Note how we use the `urlTemplate` to build the request with [`RestDocumentationR
 mockMvc.perform(get("/notes/{id}", noteId))
  ```
 
-### Migrate existing tests
+### Documenting Bean Validation constraints 
+
+Similar to the way Spring REST Docs allows to use [bean validation constraints](https://docs.spring.io/spring-restdocs/docs/current/reference/html5/#documenting-your-api-constraints) to enhance your documentation, you can also use the constraints from your model classes to let `restdocs-raml` enrich the generated JsonSchemas. 
+`restdocs-raml` provides the class [com.epages.restdocs.raml.ConstrainedFields](restdocs-raml/src/main/java/com/epages/restdocs/raml/ConstrainedFields.java) to generate `FieldDescriptor`s that contain information about the constraints on this field. 
+
+Currently the following constraints are considered when generating JsonSchema from `FieldDescriptor`s that have been created via `com.epages.restdocs.raml.ConstrainedFields`
+- `NotNull`, `NotEmpty`, and `NotBlank` annotated fields become required fields in the JsonSchema
+- for String fields annotated with `NotEmpty`, and `NotBlank` the `minLength` constraint in JsonSchema is set to 1
+- for String fields annotated with `Length` the `minLength` and `maxLength` constraints in JsonSchema are set to the value of the corresponding attribute of the annotation
+
+### Migrate existing Spring REST Docs tests
 
 For convenience when applying `restdocs-raml` to an existing project that uses Spring REST Docs, we introduced [RamlDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlDocumentation.java).
 
-In you tests you can just replace calls to `MockMvcRestDocumentation.document` with the corresponding variant of `RamlDocumentation.document`.
+In your tests you can just replace calls to `MockMvcRestDocumentation.document` with the corresponding variant of `RamlDocumentation.document`.
 
-It will always execute the specified snippets and also add a `RamlResourceSnippet` equipped with the input from your snippets.
+`RamlDocumentation.document` will execute the specified snippets and also add a `RamlResourceSnippet` equipped with the input from your snippets.
 
 Here is an example:
 
@@ -237,13 +266,6 @@ resultActions
 
 This will do exactly the same as using `MockMvcRestDocumentation.document` without `restdocs-raml`.
 Additionally it will add a `RamlResourceSnippet` with the descriptors you provided in the `RequestFieldsSnippet`, `ResponseFieldsSnippet`, and `LinksSnippet`.
-
-### Compatibility with Spring Boot 2 (WebTestClient)
-
-`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.3`.
-
-We adopted the Spring REST Docs sample project that shows the usage of `WebTestClient` to use `restdocs-raml` to verify the compatibility.
-See https://github.com/mduesterhoeft/spring-restdocs/tree/master/samples/web-test-client.
 
 ### Running the gradle plugin
 
@@ -349,6 +371,13 @@ cd restdocs-raml-sample
 You find the HTML file under `build/ramldoc/api.raml.html` after running the gradle task.
 
 :warning: the current version of raml2html is only working with RAML 1.0 - you have to fall back to raml2html version 3 - `npm install -g raml2html@3.0.1`
+
+## Compatibility with Spring Boot 2 (WebTestClient)
+
+`restdocs-raml` is compatible with Spring REST Docs 2 and the new `WebTestClient` since version `0.2.3`.
+
+We adopted the Spring REST Docs sample project that shows the usage of `WebTestClient` to use `restdocs-raml` to verify the compatibility.
+See https://github.com/mduesterhoeft/spring-restdocs/tree/master/samples/web-test-client.
 
 ## Limitations
 
