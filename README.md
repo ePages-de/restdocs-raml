@@ -95,13 +95,13 @@ ramldoc { //7
 4. add repositories used for dependency resolution. We need `jcenter` for `restdocs-raml` and `jitpack` for one of the dependencies we use internally
 5. add the actual `restdocs-raml` dependency to the test scope
 6. `spring-boot` specifies an old version of `org.json:json`. We use [everit-org/json-schema](https://github.com/everit-org/json-schema) to generate json schema files. This project depends on a newer version of `org.json:json`. As versions from BOM always override transitive versions coming in through maven dependencies, you need to add an explicit dependency to `org.json:json:20170516`
-7. optional - add configuration options for restdocs-raml-gradle-plugin see [Gradle plugin configuration](#gradle-plugin-configuration)
+7. add configuration options for restdocs-raml-gradle-plugin see [Gradle plugin configuration](#gradle-plugin-configuration)
 
 See the [build.gradle](restdocs-raml-sample/build.gradle) for the setup used in the sample project.
 
 ### Usage with Spring REST Docs
 
-The class [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) contains the entrypoint for using the [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java).
+The class [RamlResourceDocumentation](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceDocumentation.java) contains the entry point for using the [RamlResourceSnippet](restdocs-raml/src/main/java/com/epages/restdocs/raml/RamlResourceSnippet.java).
 
 The most basic form does not take any parameters:
 
@@ -112,7 +112,7 @@ mockMvc
   .andDo(document("notes-list", ramlResource()));
 ```
 
-This test will produce the following files in the output directory:
+This test will produce the following files in the snippets directory:
 
 - raml-resource.raml
 - notes-list-response.json
@@ -219,6 +219,8 @@ It now carries a reference to the json schema.
 }
 ```
 
+Please see the [ApiDocumentation](restdocs-raml-sample/src/test/java/com/example/notes/ApiDocumentation.java) in the sample application for a detailed example.
+
 **:warning: Use `template URIs` to refer to path variables in your request**
 
 Note how we use the `urlTemplate` to build the request with [`RestDocumentationRequestBuilders`](https://docs.spring.io/spring-restdocs/docs/current/api/org/springframework/restdocs/mockmvc/RestDocumentationRequestBuilders.html#get-java.lang.String-java.lang.Object...-). This makes the `urlTemplate` available in the snippet and we can render it into the `RAML` fragments. 
@@ -238,6 +240,7 @@ Currently the following constraints are considered when generating JsonSchema fr
 - for String fields annotated with `Length` the `minLength` and `maxLength` constraints in JsonSchema are set to the value of the corresponding attribute of the annotation
 
 Example:
+
 The model class carries the bean validation annotations
 ```java
 public class NoteInput {
