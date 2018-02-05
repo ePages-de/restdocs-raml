@@ -22,6 +22,7 @@ Check out our [introductory blog post](https://developer.epages.com/blog/api-exp
     - [Running the gradle plugin](#running-the-gradle-plugin)
     - [Gradle plugin configuration](#gradle-plugin-configuration)
 - [Generate HTML](#generate-html)
+- [Generate an interactive API console](#generate-an-interactive-api-console)
 - [Compatibility with Spring Boot 2 (WebTestClient)](#compatibility-with-spring-boot-2-webtestclient)
 - [Limitations](#limitations)
     - [Rest Assured](#rest-assured)
@@ -431,6 +432,25 @@ cd restdocs-raml-sample
 You find the HTML file under `build/ramldoc/api.raml.html` after running the gradle task.
 
 :warning: the current version of raml2html is only working with RAML 1.0 - you have to fall back to raml2html version 3 - `npm install -g raml2html@3.0.1`
+
+## Generate an interactive API console
+
+[api-console](https://github.com/mulesoft/api-console) is a great tool to generate an interactive playground for your API using the RAML file generated from `restdocs-raml`. 
+
+You can install the `api-console-cli` using npm.
+
+```
+npm install -g api-console-cli
+```
+
+Start the API console
+```
+cd restdocs-raml-sample
+./gradlew ramldoc
+cd build/ramldoc/
+api-console dev api.raml
+open http://localhost:8081
+``` 
 
 ## Compatibility with Spring Boot 2 (WebTestClient)
 
