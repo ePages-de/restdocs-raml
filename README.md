@@ -18,14 +18,6 @@ Check out our [introductory blog post](https://developer.epages.com/blog/api-exp
     - [Build configuration](#build-configuration)
     - [Usage with Spring REST Docs](#usage-with-spring-rest-docs)
     - [Documenting Bean Validation constraints](#documenting-bean-validation-constraints)
-    - [Migrate existing Spring REST Docs tests](#migrate-existing-spring-rest-docs-tests)
-    - [Running the gradle plugin](#running-the-gradle-plugin)
-    - [Gradle plugin configuration](#gradle-plugin-configuration)
-- [Generate HTML](#generate-html)
-- [Compatibility with Spring Boot 2 (WebTestClient)](#compatibility-with-spring-boot-2-webtestclient)
-- [Limitations](#limitations)
-    - [Rest Assured](#rest-assured)
-    - [Maven plugin](#maven-plugin)
 
 <!-- /TOC -->
 
@@ -236,6 +228,62 @@ Currently the following constraints are considered when generating JsonSchema fr
 - `NotNull`, `NotEmpty`, and `NotBlank` annotated fields become required fields in the JsonSchema
 - for String fields annotated with `NotEmpty`, and `NotBlank` the `minLength` constraint in JsonSchema is set to 1
 - for String fields annotated with `Length` the `minLength` and `maxLength` constraints in JsonSchema are set to the value of the corresponding attribute of the annotation
+
+Example:
+The model class carries the bean validation annotations
+```java
+public class NoteInput {
+	
+	@NotBlank
+	private final String title;
+
+	@Length(max = 1024)
+	private final String body;
+
+	private final List<URI> tagUris;
+//...
+}
+
+```java
+//create a ConstrainedFields instance with the model class carrying the bean validation constraint annotations
+private ConstrainedFields noteFields = new ConstrainedFields(NoteInput.class);
+//...
+resultActions
+    .andDo(document("notes-create",
+        ramlResource(RamlResourceSnippetParameters.builder()
+            .description("Create a note")
+            .requestFields(
+              //use the ConstrainedFields instance to create the field descriptors
+                noteFields.withPath("title").description("The title of the note"),
+                noteFields.withPath("body").description("The body of the note"),
+                noteFields.withPath("tags").description("An array of tag resource URIs"))
+            .build())));
+```
+
+This results in the following JsonSchema:
+```json
+{
+  "type" : "object",
+  "properties" : {
+    "title" : {
+      "description" : "The title of the note",
+      "type" : "string",
+      "minLength" : 1
+    },
+    "body" : {
+      "description" : "The body of the note",
+      "type" : "string",
+      "minLength" : 0,
+      "maxLength" : 1024
+    },
+    "tags" : {
+      "description" : "An array of tag resource URIs",
+      "type" : "array"
+    }
+  },
+  "required" : [ "title" ]
+}
+```
 
 ### Migrate existing Spring REST Docs tests
 

@@ -112,16 +112,15 @@ public class ApiDocumentation {
 
 		whenNoteCreated();
 
-		resultActions
-				.andDo(document("notes-create",
-						ramlResource(RamlResourceSnippetParameters.builder()
-								.description("Create a note")
-								.requestFields(
-										noteFields.withPath("title").description("The title of the note"),
-										noteFields.withPath("body").description("The body of the note"),
-										noteFields.withPath("tags").description("An array of tag resource URIs"))
-								.build()))
-				);
+        resultActions
+                .andDo(document("notes-create",
+                        ramlResource(RamlResourceSnippetParameters.builder()
+                                .description("Create a note")
+                                .requestFields(
+                                        noteFields.withPath("title").description("The title of the note"),
+                                        noteFields.withPath("body").description("The body of the note"),
+                                        noteFields.withPath("tags").description("An array of tag resource URIs"))
+                                .build())));
 	}
 
 	@Test
