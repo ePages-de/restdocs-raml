@@ -18,6 +18,14 @@ Check out our [introductory blog post](https://developer.epages.com/blog/api-exp
     - [Build configuration](#build-configuration)
     - [Usage with Spring REST Docs](#usage-with-spring-rest-docs)
     - [Documenting Bean Validation constraints](#documenting-bean-validation-constraints)
+    - [Migrate existing Spring REST Docs tests](#migrate-existing-spring-rest-docs-tests)
+    - [Running the gradle plugin](#running-the-gradle-plugin)
+    - [Gradle plugin configuration](#gradle-plugin-configuration)
+- [Generate HTML](#generate-html)
+- [Compatibility with Spring Boot 2 (WebTestClient)](#compatibility-with-spring-boot-2-webtestclient)
+- [Limitations](#limitations)
+    - [Rest Assured](#rest-assured)
+    - [Maven plugin](#maven-plugin)
 
 <!-- /TOC -->
 
@@ -243,6 +251,7 @@ public class NoteInput {
 	private final List<URI> tagUris;
 //...
 }
+```
 
 ```java
 //create a ConstrainedFields instance with the model class carrying the bean validation constraint annotations
@@ -261,7 +270,7 @@ resultActions
 ```
 
 This results in the following JsonSchema:
-```json
+```
 {
   "type" : "object",
   "properties" : {
