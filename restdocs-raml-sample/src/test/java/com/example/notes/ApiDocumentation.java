@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.restdocs.JUnitRestDocumentation;
@@ -45,10 +47,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@AutoConfigureMockMvc
+@AutoConfigureRestDocs(outputDir = "build/generated-snippets")
 public class ApiDocumentation {
-	
-	@Rule
-	public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation("build/generated-snippets");
 	
 	@Autowired
 	private NoteRepository noteRepository;
@@ -62,9 +63,9 @@ public class ApiDocumentation {
 	@Autowired
 	private WebApplicationContext context;
 
-	private ConstrainedFields noteFields = new ConstrainedFields(NoteInput.class);
-
+    @Autowired
 	private MockMvc mockMvc;
+
 	private HashMap<String, String> tag;
 	private String tagLocation;
 	private ResultActions resultActions;
@@ -73,10 +74,6 @@ public class ApiDocumentation {
 
 	@Before
 	public void setUp() {
-
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-			.apply(documentationConfiguration(this.restDocumentation))
-			.build();
 
 		this.noteRepository.deleteAll();
 		this.tagRepository.deleteAll();
@@ -112,6 +109,7 @@ public class ApiDocumentation {
 
 		whenNoteCreated();
 
+		ConstrainedFields noteFields = new ConstrainedFields(NoteInput.class);
         resultActions
                 .andDo(document("notes-create",
                         ramlResource(RamlResourceSnippetParameters.builder()
