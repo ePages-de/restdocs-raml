@@ -20,6 +20,7 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.restdocs.operation.Operation;
 
 import com.epages.restdocs.raml.RamlResourceSnippet.MissingUrlTemplateException;
+import com.epages.restdocs.raml.RamlResourceSnippetParameters.RamlResourceSnippetParametersBuilder;
 
 import lombok.SneakyThrows;
 
@@ -32,7 +33,7 @@ public class RamlResourceSnippetTest implements RamlResourceSnippetTestTrait {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private RamlResourceSnippetParameters.RamlResourceSnippetParametersBuilder parametersBuilder;
+    private RamlResourceSnippetParametersBuilder parametersBuilder;
 
     @Before
     public void setUp() {

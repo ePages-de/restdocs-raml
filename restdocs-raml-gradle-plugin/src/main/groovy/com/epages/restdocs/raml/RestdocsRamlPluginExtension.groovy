@@ -11,6 +11,8 @@ class RestdocsRamlPluginExtension {
     String outputDirectory = "build/ramldoc"
     String snippetsDirectory = "build/generated-snippets"
 
+    String outputFileNamePrefix = "api"
+
     RestdocsRamlPluginExtension(Project project) {
     }
 }

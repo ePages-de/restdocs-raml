@@ -18,12 +18,14 @@ class RestdocsRamlTaskTest extends Specification {
     String apiTitle
     String baseUri
     String ramlVersion
+    String outputFileNamePrefix
     boolean separatePublicApi = false
 
     def setup() {
         apiTitle = "Notes API"
         baseUri = "http://localhost:8080/"
         ramlVersion = 1.0
+        outputFileNamePrefix = "api"
 
         buildFile = testProjectDir.newFile('build.gradle')
 
@@ -41,6 +43,7 @@ class RestdocsRamlTaskTest extends Specification {
         given:
             separatePublicApi = true
             ramlVersion = "0.8"
+            outputFileNamePrefix = "index"
             givenBuildFileWithRamldocClosure()
             givenSnippetFiles()
             givenRequestBodyJsonFile()
@@ -83,15 +86,32 @@ class RestdocsRamlTaskTest extends Specification {
             thenRequestBodyJsonFileFoundInOutputDirectory()
     }
 
+    def "should rename group file if outputFileNamePrefix equals group name"() {
+        given:
+            givenBuildFileWithRamldocClosure()
+            givenSnippetFileWithApiPath()
+            givenRequestBodyJsonFile()
+        when:
+            whenPluginExecuted()
+        then:
+            result.task(":ramldoc").outcome == SUCCESS
+            thenApiRamlFileExistsWithHeaders()
+            thenGroupFileGeneratedWithGroupSuffix()
+    }
+
     private void whenPluginExecuted() {
         result = GradleRunner.create()
                 .withProjectDir(testProjectDir.root)
-                .withArguments('ramldoc')
+                .withArguments('--info', '--stacktrace', 'ramldoc')
                 .withPluginClasspath(pluginClasspath)
                 .build()
     }
     private void thenRequestBodyJsonFileFoundInOutputDirectory() {
         assert new File(testProjectDir.root,"build/ramldoc/carts-create-request.json").exists()
+    }
+
+    private void thenGroupFileGeneratedWithGroupSuffix() {
+        new File(testProjectDir.root, "build/ramldoc/api-group.raml").exists()
     }
 
     private void thenGroupFileGenerated() {
@@ -112,7 +132,13 @@ class RestdocsRamlTaskTest extends Specification {
     }
 
     private void thenApiRamlFileGenerated() {
-        def apiFile = new File(testProjectDir.root, "build/ramldoc/api.raml")
+        List<String> lines = thenApiRamlFileExistsWithHeaders()
+        assert lines.any() { it == "/carts: !include carts.raml" }
+        assert lines.any() { it == "/: !include root.raml" }
+    }
+
+    private List<String> thenApiRamlFileExistsWithHeaders() {
+        def apiFile = new File(testProjectDir.root, "build/ramldoc/${outputFileNamePrefix}.raml")
         def lines = apiFile.readLines()
         assert apiFile.exists()
         assert lines.any { it == "#%RAML $ramlVersion" }
@@ -120,14 +146,24 @@ class RestdocsRamlTaskTest extends Specification {
         if (baseUri != null) {
             assert lines.any { it.startsWith("baseUri:") }
         }
-        assert lines.any() { it == "/carts: !include carts.raml" }
-        assert lines.any() { it == "/: !include root.raml" }
+        lines
     }
 
     private def givenRequestBodyJsonFile() {
         testProjectDir.newFile("build/generated-snippets/carts-create/carts-create-request.json") << """{}"""
     }
 
+    private def givenSnippetFileWithApiPath() {
+        new File(testProjectDir.newFolder("build", "generated-snippets", "carts-create"), "raml-resource.raml") << """/api/some:
+  post:
+    description: "TODO - figure out how to set"
+    securedBy: ["pymt:u"]
+    body:
+      application/hal+json:
+        schema: !include carts-create-request.json
+        example: !include carts-create-request.json
+"""
+    }
     private def givenSnippetFiles() {
         new File(testProjectDir.newFolder("build", "generated-snippets", "carts-create"), "raml-resource.raml") << """/carts:
   post:
@@ -171,6 +207,7 @@ ramldoc {
     apiBaseUri = '$baseUri'
     ramlVersion = "$ramlVersion"
     separatePublicApi = $separatePublicApi
+    outputFileNamePrefix = "$outputFileNamePrefix"
 }
 """
     }

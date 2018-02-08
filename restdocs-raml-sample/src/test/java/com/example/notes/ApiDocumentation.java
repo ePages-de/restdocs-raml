@@ -74,7 +74,6 @@ public class ApiDocumentation {
 
 	@Before
 	public void setUp() {
-
 		this.noteRepository.deleteAll();
 		this.tagRepository.deleteAll();
 	}

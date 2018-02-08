@@ -7,14 +7,17 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.snippet.Attributes.Attribute;
+import org.springframework.util.ReflectionUtils;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,7 +47,8 @@ public class RamlResourceSnippetParameters {
     }
 
     private static FieldDescriptor toFieldDescriptor(LinkDescriptor linkDescriptor) {
-        FieldDescriptor descriptor = fieldWithPath("_links." + linkDescriptor.getRel()) //change to subsectionWithPath on spring-rest-docs 1.2
+
+        FieldDescriptor descriptor = createLinkFieldDescriptor(linkDescriptor.getRel())
                 .description(linkDescriptor.getDescription())
                 .type(JsonFieldType.OBJECT)
                 .attributes(linkDescriptor.getAttributes().entrySet().stream()
@@ -59,6 +63,20 @@ public class RamlResourceSnippetParameters {
         }
 
         return descriptor;
+    }
+
+    /**
+     * Behaviour changed from restdocs 1.1 to restdocs 1.2
+     * In 1.2 you need to document attributes inside the object when documenting the object with fieldWithPath - which was not the case with 1.1
+     * So we need to use subsectionWithPath if we are working with 1.2 and fieldWithPath otherwise
+     * @param rel
+     * @return
+     */
+    private static FieldDescriptor createLinkFieldDescriptor(String rel) {
+        String path = "_links." + rel;
+        return (FieldDescriptor) Optional.ofNullable(ReflectionUtils.findMethod(PayloadDocumentation.class, "subsectionWithPath", String.class))
+                .map(m -> ReflectionUtils.invokeMethod(m, null, path))
+                .orElseGet(() -> fieldWithPath(path));
     }
 
     public static class RamlResourceSnippetParametersBuilder {

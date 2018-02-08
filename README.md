@@ -143,11 +143,11 @@ We paid close attention to keep the API as similar as possible to what you alrea
 mockMvc
 	.perform(get("/notes/{id}", noteId))
 	.andExpect(status().isOk())
-    .andDo(document("notes-get",
+  .andDo(document("notes-get",
 	    ramlResource(RamlResourceSnippetParameters.builder()
-		    .description("Get a note by id")
-			  .pathParameters(parameterWithName("id").description("The note id"))
-			  .responseFields(
+        .description("Get a note by id")
+        .pathParameters(parameterWithName("id").description("The note id"))
+        .responseFields(
 			    fieldWithPath("title").description("The title of the note"),
 				  fieldWithPath("body").description("The body of the note"),
 				  fieldWithPath("_links").description("Links to other resources"))

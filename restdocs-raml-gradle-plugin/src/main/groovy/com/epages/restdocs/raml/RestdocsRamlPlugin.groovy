@@ -21,6 +21,8 @@ class RestdocsRamlPlugin implements Plugin<Project> {
 
                 outputDirectory = project.ramldoc.outputDirectory
                 snippetsDirectory = project.ramldoc.snippetsDirectory
+
+                outputFileNamePrefix = project.ramldoc.outputFileNamePrefix
             }
         }
     }

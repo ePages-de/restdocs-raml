@@ -57,7 +57,7 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("flag").description("the flag"),
                         fieldWithPath("count").description("the count"),
                         fieldWithPath("id").description("id"),
-                        fieldWithPath("_links").ignored()
+                        subsectionWithPath("_links").ignored()
                     ),
                     links(linkWithRel("self").description("some"))
                 )
@@ -82,7 +82,7 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("flag").ignored(),
                         fieldWithPath("count").ignored(),
                         fieldWithPath("id").ignored(),
-                        fieldWithPath("_links").ignored()
+                        subsectionWithPath("_links").ignored()
                     ),
                     links(linkWithRel("self").optional().ignored())
                 )

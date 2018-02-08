@@ -32,12 +32,14 @@ class RestdocsRamlTask extends DefaultTask {
     @Input
     String snippetsDirectory
 
+    @Input
+    String outputFileNamePrefix
+
     static String version08 = "#%RAML 0.8"
     static String version10 = "#%RAML 1.0"
 
     static String ramlVersionSetting08 = "0.8"
 
-    private String outputFileNamePrefix = "api"
 
     File getOutputDirectory() {
         project.file(outputDirectory)
@@ -80,7 +82,7 @@ class RestdocsRamlTask extends DefaultTask {
 
     def writeGroupFiles(List<RamlFragments> ramlFragmentsList, File outputDirectory, boolean ignorePrivate) {
         ramlFragmentsList.each { fragments ->
-            new File(outputDirectory, fragments.getGroupFileName(ignorePrivate)).withWriter('utf-8') { writer ->
+            new File(outputDirectory, fragments.getGroupFileName(ignorePrivate, outputFileNamePrefix)).withWriter('utf-8') { writer ->
                 fragments.ramlFragments.each { fragment ->
                     def remainingContent = ramlVersion == ramlVersionSetting08 ? fragment.remainingContent : fragment.remainingContent.replaceAll("schema: !include", "type: !include")
                     if (!fragment.remainingPath(fragments.commonPath).isEmpty()) {
@@ -105,7 +107,7 @@ class RestdocsRamlTask extends DefaultTask {
                 writer.write("baseUri: ${apiBaseUri}\n")
             }
             ramlFragmentsList.each { fragments ->
-                writer.write("${fragments.commonPath}: !include ${fragments.getGroupFileName(ignorePrivate)}\n")
+                writer.write("${fragments.commonPath}: !include ${fragments.getGroupFileName(ignorePrivate, outputFileNamePrefix)}\n")
             }
         }
     }
@@ -120,12 +122,15 @@ class RamlFragments {
         this.ramlFragments = ramlFragments
     }
 
-    String getGroupFileName(boolean ignorePrivate) {
+    String getGroupFileName(boolean ignorePrivate, String outputFileNamePrefix) {
         def fileNamePrefix = commonPath.equals("/") ? "root" : commonPath
                 .replaceFirst("/", "")
                 .replaceAll("\\{", "")
                 .replaceAll("}", "")
                 .replaceAll("/", "-")
+        if (fileNamePrefix == outputFileNamePrefix) {
+            fileNamePrefix += "-group"
+        }
         def fileNameSuffix = ".raml"
         ignorePrivate ? "$fileNamePrefix-public$fileNameSuffix" : "$fileNamePrefix$fileNameSuffix"
     }
