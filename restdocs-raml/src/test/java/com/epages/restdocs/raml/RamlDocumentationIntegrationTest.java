@@ -59,7 +59,10 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("id").description("id"),
                         subsectionWithPath("_links").ignored()
                     ),
-                    links(linkWithRel("self").description("some"))
+                    links(
+                            linkWithRel("self").description("some"),
+                            linkWithRel("multiple").description("multiple")
+                    )
                 )
             );
     }
@@ -84,7 +87,10 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                         fieldWithPath("id").ignored(),
                         subsectionWithPath("_links").ignored()
                     ),
-                    links(linkWithRel("self").optional().ignored())
+                    links(
+                            linkWithRel("self").optional().ignored(),
+                            linkWithRel("multiple").optional().ignored()
+                    )
                 )
             );
     }

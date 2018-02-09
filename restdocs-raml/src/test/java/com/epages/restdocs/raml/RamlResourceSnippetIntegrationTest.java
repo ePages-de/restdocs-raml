@@ -144,7 +144,10 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
                 .pathParameters(
                         parameterWithName("someId").description("some id").type(STRING),
                         parameterWithName("otherId").description("otherId id").type(INTEGER))
-                .links(linkWithRel("self").description("some"))
+                .links(
+                        linkWithRel("self").description("some"),
+                        linkWithRel("multiple").description("multiple")
+                )
                 .build());
     }
 
@@ -199,6 +202,8 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
             testDateHolder.setId(UUID.randomUUID().toString());
             Resource<TestDateHolder> resource = new Resource<>(testDateHolder);
             resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withSelfRel());
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withRel("multiple"));
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withRel("multiple"));
             return ResponseEntity.ok(resource);
         }
     }

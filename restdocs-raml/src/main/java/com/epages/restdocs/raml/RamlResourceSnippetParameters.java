@@ -50,7 +50,7 @@ public class RamlResourceSnippetParameters {
 
         FieldDescriptor descriptor = createLinkFieldDescriptor(linkDescriptor.getRel())
                 .description(linkDescriptor.getDescription())
-                .type(JsonFieldType.OBJECT)
+                .type(JsonFieldType.VARIES)
                 .attributes(linkDescriptor.getAttributes().entrySet().stream()
                         .map(e -> new Attribute(e.getKey(), e.getValue()))
                         .toArray(Attribute[]::new));
