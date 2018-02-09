@@ -14,7 +14,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -151,9 +150,9 @@ public class ApiDocumentation {
 						.description("Get a paged list of tags")
 						.responseFields(
 								fields(
-										subsectionWithPath("_embedded.tags").description("An array of tags"),
+										fieldWithPath("_embedded.tags").description("An array of tags"),
 										fieldWithPath("_links").description("Links"),
-										subsectionWithPath("page").description("Paging information")
+										fieldWithPath("page").description("Paging information")
 								).andWithPrefix("_embedded.tags[].", tagFields()))
 						.links(
 								linkWithRel("self").description("Self link"),

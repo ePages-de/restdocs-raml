@@ -42,8 +42,8 @@ dependencies {
     testCompile 'org.json:json:20170516'
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.2.3.RELEASE'
-    testCompile 'org.springframework.restdocs:spring-restdocs-core:1.2.3.RELEASE'
+    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testCompile 'org.springframework.restdocs:spring-restdocs-core'
     testCompile 'org.raml:raml-parser-2:1.0.15'
 }
 
