@@ -16,8 +16,8 @@ group = 'com.epages'
 
 dependencies {
     compile gradleApi()
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.21")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.2.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.30")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.2.30")
     implementation("org.yaml:snakeyaml:1.20")
 
 
