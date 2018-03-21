@@ -68,7 +68,8 @@ open class RestdocsRamlTask: DefaultTask() {
                         apiTitle,
                         apiBaseUri,
                         outputFileNamePrefix,
-                        fragmentGroups),
+                        fragmentGroups,
+                        fileNameSuffix),
                 headerLine = if (ramlVersion == "0.8") "#%RAML 0.8" else "#%RAML 1.0"
         )
 
