@@ -1,7 +1,9 @@
 package com.epages.restdocs.raml
 
+import java.io.File
 
-object FragmentProcessor {
+
+class FragmentProcessor(val aggregateFragmentsForSameResource: Boolean) {
 
     fun groupFragments(fragments: List<RamlFragment>): List<FragmentGroup> {
         return fragments
@@ -11,7 +13,7 @@ object FragmentProcessor {
                 .map { entry -> FragmentGroup(entry.key, entry.value) }
     }
 
-    fun aggregateFileMap(apiTitle: String, apiBaseUri: String?, ramlVersion: String, outputFileNamePrefix: String, fragmentGroups: List<FragmentGroup>, fileNameSuffix: String = ".raml"): Map<*, *> {
+    fun aggregateFileMap(apiTitle: String, apiBaseUri: String?, outputFileNamePrefix: String, fragmentGroups: List<FragmentGroup>, fileNameSuffix: String = ".raml"): Map<*, *> {
         return listOfNotNull(
                 "title" to apiTitle,
                 apiBaseUri?.let { "baseUri" to apiBaseUri })
@@ -41,12 +43,39 @@ object FragmentProcessor {
     private fun mergeFragmentsWithSamePath(fragments: List<RamlFragment>): List<RamlFragment> {
         return fragments
                 .groupBy { it.path }
-                .map {
-                    if (it.value.size > 1)
-                        it.value.reduce({ f1, f2 -> RamlFragment(f1.path, f1.content.plus(f2.content)) })
-                    else it.value.single()
+                .map { (_, fragments) ->
+                    if (fragments.size > 1) reduceFragmentsWithSamePath(fragments)
+                    else fragments.single()
                 }
     }
+
+    private fun reduceFragmentsWithSamePath(value: List<RamlFragment>): RamlFragment {
+        return value.groupBy { it.requestMethod }
+                .map { (_, fragments) -> mergeFragmentsWithSameRequestMethod(fragments) }
+                .reduce({ f1, f2 -> RamlFragment(f1.id, f1.path, f1.content + f2.content) })
+    }
+
+    private fun mergeFragmentsWithSameRequestMethod(fragments: List<RamlFragment>): RamlFragment {
+
+        fun replaceExamples(fragments: List<RamlFragment>, target: Map<*,*>, mapExtractor: (RamlFragment) -> Map<*,*>?) =
+                fragments
+                        .mapNotNull { fragment -> mapExtractor(fragment)?.findValueByKeyRecursive("example")
+                                ?.let { example -> Pair(fragment.id, example) } }
+                        .toMap()
+                        .let { examplesMap -> target.replaceMapEntryRecursive("example", "examples", { _ -> examplesMap }) }
+
+        if (!aggregateFragmentsForSameResource)
+            return fragments.first() // for RAML 0.8 we cannot aggregate examples because multiple examples are not supported
+
+        return fragments.first()
+                .let { fragment -> fragment.requestBody
+                        ?.let { fragment.withBody(replaceExamples(fragments, it, { f -> f.requestBody })) }
+                        ?: fragment }
+                .let { fragment -> fragment.responses
+                        ?.let { fragment.withResponses(replaceExamples(fragments, it, { f -> f.responses })) }
+                        ?: fragment }
+    }
+
 
     private fun removeCommonPathFromFragmentPath(entry: Map.Entry<String, List<RamlFragment>>) =
             entry.value
@@ -59,7 +88,7 @@ data class FragmentGroup(val commonPathPrefix: String, private val _ramlFragment
         get() = _ramlFragments.sortedBy { it.path.length }
 }
 
-data class RamlFragment(val path: String, val content: Map<*, *>) {
+data class RamlFragment(val id: String, val path: String, val content: Map<*, *>) {
 
     @Suppress("UNCHECKED_CAST")
     val privateResource by lazy {
@@ -71,16 +100,38 @@ data class RamlFragment(val path: String, val content: Map<*, *>) {
                 ?.let{ "/$it" }?:"/"
     }
 
+    val requestMethod by lazy { content.keys.first() as String }
+
+    val requestBody
+        get() = content.findValueByKeyRecursive("body", listOf("responses")) as? Map<*,*>
+
+    val responses
+        get() = content.findValueByKeyRecursive("responses") as? Map<*,*>
+
+    fun withBody(body: Map<*,*>) = copy(content = content.replaceMapEntryRecursive("body", "body", { _ -> body }, listOf("responses")))
+
+    fun withResponses(responses: Map<*,*>) = copy(content = content.replaceMapEntryRecursive("responses", "responses", { _ -> responses }))
+
     fun replaceSchemaWithType(): RamlFragment {
-        return RamlFragment(path, content.replaceLKeyRecursive("schema", "type"))
+        return RamlFragment(id, path, content.replaceMapEntryRecursive("schema", "type"))
     }
 
     companion object {
         @Suppress("UNCHECKED_CAST")
-        fun fromYamlMap(yamlMap: Map<*, *>): RamlFragment {
+        fun fromYamlMap(id: String, yamlMap: Map<*, *>): RamlFragment {
             return RamlFragment(
-                    yamlMap.keys.first() as String,
-                    yamlMap.values.first() as Map<*, *>)
+                    id = id,
+                    path = yamlMap.keys.first() as String,
+                    content = yamlMap.values.first() as Map<*, *>)
+        }
+
+        fun fromFile(file: File): RamlFragment {
+            val id = file.path
+                    .removeSuffix(file.name)
+                    .removeSuffix(File.separator)
+                    .split(File.separator)
+                    .let { it[it.size - 1] }
+            return fromYamlMap(id, RamlParser.parseFragment(file))
         }
     }
 }

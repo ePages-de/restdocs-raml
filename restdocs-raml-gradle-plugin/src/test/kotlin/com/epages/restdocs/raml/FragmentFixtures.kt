@@ -10,7 +10,7 @@ interface FragmentFixtures {
             is: [ "private" ]
             responses:
               200:
-                body:
+                requestBody:
                   application/hal+json:
                     schema: !include payment-integration-get-schema-response.json
                     example: !include payment-integration-get-response.json
@@ -22,7 +22,7 @@ interface FragmentFixtures {
             description:
             responses:
               200:
-                body:
+                requestBody:
                   application/hal+json:
                     schema: !include payment-integration-get-schema-response.json
                     example: !include payment-integration-get-response.json
