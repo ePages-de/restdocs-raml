@@ -49,7 +49,7 @@ open class RestdocsRamlTask: DefaultTask() {
         val ramlFragments = snippetsDirectoryFile.walkTopDown()
                 .filter { it.name is String && it.name.startsWith("raml-resource") }
                 .map { RamlFragment.fromFile(it) }
-                .map { if (ramlVersion == "1.0") it.replaceSchemaWithType() else it }
+                .map { if (isRamlVersion1()) it.replaceSchemaWithType() else it }
                 .toList()
 
         writeFiles(ramlFragments, ".raml")
@@ -59,7 +59,7 @@ open class RestdocsRamlTask: DefaultTask() {
     }
 
     fun writeFiles(ramlFragments: List<RamlFragment>, fileNameSuffix: String) {
-        val fragmentProcessor = FragmentProcessor(ramlVersion == "1.0")
+        val fragmentProcessor = FragmentProcessor(isRamlVersion1(), JsonSchemaMerger(outputDirectoryFile))
 
         val fragmentGroups = fragmentProcessor.groupFragments(ramlFragments)
         RamlWriter.writeFile(
@@ -70,7 +70,7 @@ open class RestdocsRamlTask: DefaultTask() {
                         outputFileNamePrefix,
                         fragmentGroups,
                         fileNameSuffix),
-                headerLine = if (ramlVersion == "0.8") "#%RAML 0.8" else "#%RAML 1.0"
+                headerLine = if (isRamlVersion1()) "#%RAML 1.0" else "#%RAML 0.8"
         )
 
         fragmentGroups.forEach {
@@ -79,6 +79,8 @@ open class RestdocsRamlTask: DefaultTask() {
                     contentMap = fragmentProcessor.groupFileMap(it)
             )}
     }
+
+    private fun isRamlVersion1() = ramlVersion == "1.0"
 
     private fun copyBodyJsonFilesToOutput() {
         snippetsDirectoryFile.walkTopDown().forEach {

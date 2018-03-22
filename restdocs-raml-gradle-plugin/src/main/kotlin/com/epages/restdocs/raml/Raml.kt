@@ -45,7 +45,7 @@ private fun yaml() = Yaml(IncludeConstructor(), IncludeRepresenter(),
             isAllowReadOnlyProperties = true
         })
 
-internal data class Include(val location: String)
+data class Include(val location: String)
 
 internal class IncludeRepresenter : Representer() {
     init {

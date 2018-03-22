@@ -3,7 +3,7 @@ package com.epages.restdocs.raml
 import java.io.File
 
 
-class FragmentProcessor(val aggregateFragmentsForSameResource: Boolean) {
+class FragmentProcessor(val ramlVersion1: Boolean, val jsonSchemaMerger: JsonSchemaMerger) {
 
     fun groupFragments(fragments: List<RamlFragment>): List<FragmentGroup> {
         return fragments
@@ -55,27 +55,69 @@ class FragmentProcessor(val aggregateFragmentsForSameResource: Boolean) {
                 .reduce({ f1, f2 -> RamlFragment(f1.id, f1.path, f1.content + f2.content) })
     }
 
+    /**
+     * Fragments that have the same path and method need to be reduced into a single fragment
+     * For RAML 1.0 we reduce by choosing one fragment and add the examples of all the fragments into an examples tag.
+     * For RAML 0.8 we just have to choose one fragment because multiple examples are not supported.
+     *
+     * In both cases we also merge the JsonSchema of all the RamlFragments.
+     */
     private fun mergeFragmentsWithSameRequestMethod(fragments: List<RamlFragment>): RamlFragment {
 
-        fun replaceExamples(fragments: List<RamlFragment>, target: Map<*,*>, mapExtractor: (RamlFragment) -> Map<*,*>?) =
+        fun aggregateAndReplaceExamples(fragments: List<RamlFragment>, target: Map<*,*>, mapExtractor: (RamlFragment) -> Map<*,*>?) =
                 fragments
                         .mapNotNull { fragment -> mapExtractor(fragment)?.findValueByKeyRecursive("example")
                                 ?.let { example -> Pair(fragment.id, example) } }
                         .toMap()
                         .let { examplesMap -> target.replaceMapEntryRecursive("example", "examples", { _ -> examplesMap }) }
 
-        if (!aggregateFragmentsForSameResource)
-            return fragments.first() // for RAML 0.8 we cannot aggregate examples because multiple examples are not supported
+        val targetFragment = fragments.sortedBy { it.id.length }.first()
+                .let { aggregateAndReplaceSchemasOrTypes(it, fragments) }
 
-        return fragments.first()
+
+
+        if (!ramlVersion1) {
+            return targetFragment
+        } // for RAML 0.8 we cannot aggregate examples because multiple examples are not supported
+
+        return targetFragment
+                //replace request body examples
                 .let { fragment -> fragment.requestBody
-                        ?.let { fragment.withBody(replaceExamples(fragments, it, { f -> f.requestBody })) }
+                        ?.let { fragment.withRequestBody(aggregateAndReplaceExamples(fragments, it, { f -> f.requestBody })) }
                         ?: fragment }
+                //replace response body examples
                 .let { fragment -> fragment.responses
-                        ?.let { fragment.withResponses(replaceExamples(fragments, it, { f -> f.responses })) }
+                        ?.let { fragment.withResponses(aggregateAndReplaceExamples(fragments, it, { f -> f.responses })) }
                         ?: fragment }
     }
 
+    /**
+     * If we find multiple fragments with the same path and method we merge the different json schemas into one.
+     */
+    private fun aggregateAndReplaceSchemasOrTypes(targetFragment: RamlFragment, fragments: List<RamlFragment>): RamlFragment {
+
+        fun aggregateAndReplaceSchemaOrType(fragments: List<RamlFragment>, target: Map<*, *>, mapExtractor: (RamlFragment) -> Map<*, *>?): Map<*, *>? {
+            val schemaOrType = if (ramlVersion1) "type" else "schema"
+            return fragments.mapNotNull { fragment -> mapExtractor(fragment)?.findValueByKeyRecursive(schemaOrType) as? Include }
+                    .let { schemaIncludes -> jsonSchemaMerger.mergeSchemas(schemaIncludes) }
+                    ?.let { mergedSchemaInclude -> target.replaceMapEntryRecursive(schemaOrType, schemaOrType, { _ -> mergedSchemaInclude }) }
+        }
+
+        if (fragments.size == 1) {
+            return targetFragment
+        }
+
+        return targetFragment
+                //replace request body schema if one
+                .let { fragment -> fragment.requestBody
+                        ?.let { aggregateAndReplaceSchemaOrType(fragments, it, { f -> f.requestBody })?.let { fragment.withRequestBody(it) } }
+                        ?: fragment }
+                //replace response body schema if one
+                .let { fragment -> fragment.responses
+                        ?.let { aggregateAndReplaceSchemaOrType(fragments, it, { f -> f.responses })?.let { fragment.withResponses(it) } }
+                        ?: fragment }
+
+    }
 
     private fun removeCommonPathFromFragmentPath(entry: Map.Entry<String, List<RamlFragment>>) =
             entry.value
@@ -108,7 +150,7 @@ data class RamlFragment(val id: String, val path: String, val content: Map<*, *>
     val responses
         get() = content.findValueByKeyRecursive("responses") as? Map<*,*>
 
-    fun withBody(body: Map<*,*>) = copy(content = content.replaceMapEntryRecursive("body", "body", { _ -> body }, listOf("responses")))
+    fun withRequestBody(body: Map<*,*>) = copy(content = content.replaceMapEntryRecursive("body", "body", { _ -> body }, listOf("responses")))
 
     fun withResponses(responses: Map<*,*>) = copy(content = content.replaceMapEntryRecursive("responses", "responses", { _ -> responses }))
 
