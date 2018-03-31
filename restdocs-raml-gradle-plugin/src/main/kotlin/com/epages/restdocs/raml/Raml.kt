@@ -30,6 +30,16 @@ object RamlParser {
 
 object RamlWriter {
 
+    fun writeApi(fileFactory: (String) -> File, api: RamlApi, apiFileName: String, groupFileNameProvider: (String) -> String) {
+        writeFile(targetFile = fileFactory(apiFileName),
+                contentMap = api.toMainFileMap(groupFileNameProvider),
+                headerLine = api.ramlVersion.versionString)
+
+        api.resourceGroups.map { writeFile(
+                targetFile = fileFactory(groupFileNameProvider(it.firstPathPart)),
+                contentMap = it.toRamlMap(api.ramlVersion)) }
+    }
+
     fun writeFile(targetFile: File, contentMap: Map<*, *>, headerLine: String? = null) {
         targetFile.writer().let { writer ->
             headerLine?.let { writer.write("$it\n" ) }

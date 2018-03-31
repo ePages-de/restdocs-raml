@@ -140,7 +140,7 @@ ramldoc {
   post:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
-    requestBody:
+    body:
       application/hal+json:
         schema: !include carts-create-request.json
         example: !include carts-create-request.json
