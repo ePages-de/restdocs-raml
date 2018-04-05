@@ -9,6 +9,8 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.restdocs.operation.OperationRequest;
+import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import lombok.SneakyThrows;
@@ -23,6 +25,16 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
         givenEndpointInvoked();
 
         whenDocumentedWithRestdocsAndRaml();
+
+        thenRestdocsAndRamlFilesExist();
+    }
+
+    @Test
+    @SneakyThrows
+    public void should_document_both_restdocs_and_raml_as_private_resource() {
+        givenEndpointInvoked();
+
+        whenDocumentedAsPrivateResource();
 
         thenRestdocsAndRamlFilesExist();
     }
@@ -93,6 +105,29 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
                     )
                 )
             );
+    }
+
+    private void whenDocumentedAsPrivateResource() throws Exception {
+        OperationRequestPreprocessor operationRequestPreprocessor = r -> { return r;};
+        resultActions
+                .andDo(
+                        RamlDocumentation.document(operationName,
+                                true,
+                                operationRequestPreprocessor,
+                                requestFields(fieldDescriptors().getFieldDescriptors()),
+                                responseFields(
+                                        fieldWithPath("comment").description("the comment"),
+                                        fieldWithPath("flag").description("the flag"),
+                                        fieldWithPath("count").description("the count"),
+                                        fieldWithPath("id").description("id"),
+                                        subsectionWithPath("_links").ignored()
+                                ),
+                                links(
+                                        linkWithRel("self").description("some"),
+                                        linkWithRel("multiple").description("multiple")
+                                )
+                        )
+                );
     }
 
     private void thenRestdocsAndRamlFilesExist() {

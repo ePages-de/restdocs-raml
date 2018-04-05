@@ -51,6 +51,20 @@ public class RamlDocumentation {
     }
 
     public static RestDocumentationResultHandler document(String identifier,
+                                                          boolean privateResource,
+                                                          OperationRequestPreprocessor requestPreprocessor,
+                                                          Snippet... snippets) {
+        return document(identifier, "", privateResource, requestPreprocessor, null, Function.identity(), snippets);
+    }
+
+    public static RestDocumentationResultHandler document(String identifier,
+                                                          boolean privateResource,
+                                                          OperationResponsePreprocessor responsePreprocessor,
+                                                          Snippet... snippets) {
+        return document(identifier, "", privateResource, null, responsePreprocessor, Function.identity(), snippets);
+    }
+
+    public static RestDocumentationResultHandler document(String identifier,
                                                           String description,
                                                           boolean privateResource,
                                                           Snippet... snippets) {
