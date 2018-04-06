@@ -16,15 +16,29 @@ fun Map<*, *>.anyMatchRecursive(predicate: Map.Entry<*, *>.() -> Boolean): Boole
     }.any { it }
 }
 
-fun Map<*, *>.replaceLKeyRecursive(oldKey: String, newKey: String): Map<*, *> {
+fun Map<*, *>.replaceMapEntryRecursive(oldKey: String, newKey: String = oldKey, valueProvider: (Any) -> Any = { value -> value } , doNotTraverse: List<String> = emptyList()): Map<*, *> {
     return this.map {
         if (it.key == oldKey)
-            Pair(newKey, it.value)
-        else {
+            Pair(newKey, valueProvider(it.value!!))
+        else  {
             when (it.value) {
-                is Map<*, *> -> Pair(it.key, (it.value as Map<*, *>).replaceLKeyRecursive(oldKey, newKey))
+                is Map<*, *> ->
+                    if (!doNotTraverse.contains(it.key))
+                        Pair(it.key, (it.value as Map<*, *>).replaceMapEntryRecursive(oldKey, newKey, valueProvider, doNotTraverse))
+                    else it.toPair()
                 else -> it.toPair()
             }
         }
     }.toMap()
+}
+
+fun Map<*, *>.findValueByKeyRecursive(keyToFind: String, doNotTraverse: List<String> = emptyList()): Any? {
+    this.forEach { (key, value) ->
+        if (keyToFind == key) return value
+        else if (value is Map<*, *> && !doNotTraverse.contains(key)) {
+            val result = value.findValueByKeyRecursive(keyToFind, doNotTraverse)
+            if (result != null) return result
+        }
+    }
+    return null
 }

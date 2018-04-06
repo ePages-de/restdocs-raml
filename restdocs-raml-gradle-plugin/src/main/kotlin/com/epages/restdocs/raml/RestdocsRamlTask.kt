@@ -1,7 +1,5 @@
 package com.epages.restdocs.raml
 
-import com.epages.restdocs.raml.FragmentProcessor.aggregateFileMap
-import com.epages.restdocs.raml.FragmentProcessor.groupFragments
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -50,9 +48,8 @@ open class RestdocsRamlTask: DefaultTask() {
 
         val ramlFragments = snippetsDirectoryFile.walkTopDown()
                 .filter { it.name is String && it.name.startsWith("raml-resource") }
-                .map { RamlParser.parseFragment(it) }
-                .map { RamlFragment.fromYamlMap(it) }
-                .map { if (ramlVersion == "1.0") it.replaceSchemaWithType() else it }
+                .map { RamlFragment.fromFile(it) }
+                .map { if (isRamlVersion1()) it.replaceSchemaWithType() else it }
                 .toList()
 
         writeFiles(ramlFragments, ".raml")
@@ -62,24 +59,28 @@ open class RestdocsRamlTask: DefaultTask() {
     }
 
     fun writeFiles(ramlFragments: List<RamlFragment>, fileNameSuffix: String) {
-        val fragmentGroups = groupFragments(ramlFragments)
+        val fragmentProcessor = FragmentProcessor(isRamlVersion1(), JsonSchemaMerger(outputDirectoryFile))
+
+        val fragmentGroups = fragmentProcessor.groupFragments(ramlFragments)
         RamlWriter.writeFile(
                 targetFile = project.file("${outputDirectory}/${outputFileNamePrefix}$fileNameSuffix"),
-                contentMap = aggregateFileMap(
+                contentMap = fragmentProcessor.aggregateFileMap(
                         apiTitle,
                         apiBaseUri,
-                        ramlVersion,
                         outputFileNamePrefix,
-                        fragmentGroups),
-                headerLine = if (ramlVersion == "0.8") "#%RAML 0.8" else "#%RAML 1.0"
+                        fragmentGroups,
+                        fileNameSuffix),
+                headerLine = if (isRamlVersion1()) "#%RAML 1.0" else "#%RAML 0.8"
         )
 
         fragmentGroups.forEach {
             RamlWriter.writeFile(
-                    targetFile = project.file("${outputDirectory}/${FragmentProcessor.groupFileName(it.commonPathPrefix, fileNameSuffix, outputFileNamePrefix)}"),
-                    contentMap = FragmentProcessor.groupFileMap(it)
+                    targetFile = project.file("${outputDirectory}/${fragmentProcessor.groupFileName(it.commonPathPrefix, fileNameSuffix, outputFileNamePrefix)}"),
+                    contentMap = fragmentProcessor.groupFileMap(it)
             )}
     }
+
+    private fun isRamlVersion1() = ramlVersion == "1.0"
 
     private fun copyBodyJsonFilesToOutput() {
         snippetsDirectoryFile.walkTopDown().forEach {

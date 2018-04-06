@@ -10,7 +10,7 @@ import org.raml.v2.api.model.v10.api.Api;
 public class RamlValidator {
 
     public static void main(String[] args) {
-        RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(Paths.get("build", "ramldoc", "api.raml").toFile());
+        RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(Paths.get("/Users/mduesterhoeft/dev/ng-checkout/build/ramldoc/api-public.raml").toFile());
         if (ramlModelResult.hasErrors()) {
             for (ValidationResult validationResult : ramlModelResult.getValidationResults())
             {

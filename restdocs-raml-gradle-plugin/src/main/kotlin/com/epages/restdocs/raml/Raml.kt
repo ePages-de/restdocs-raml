@@ -23,6 +23,9 @@ object RamlParser {
 
     fun parseFragment(fragmentStream: InputStream): Map<*, *> = yaml()
             .load<Map<Any, Any>>(fragmentStream)
+
+    fun parseFragment(s: String): Map<*, *> = yaml()
+            .load<Map<Any, Any>>(s)
 }
 
 object RamlWriter {
@@ -42,7 +45,7 @@ private fun yaml() = Yaml(IncludeConstructor(), IncludeRepresenter(),
             isAllowReadOnlyProperties = true
         })
 
-internal data class Include(val location: String)
+data class Include(val location: String)
 
 internal class IncludeRepresenter : Representer() {
     init {
