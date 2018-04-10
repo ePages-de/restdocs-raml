@@ -71,7 +71,7 @@ data class Body(val contentType: String,
 
 data class Response(val status: Int, val bodies: List<Body>): ToRamlMap {
     override fun toRamlMap(ramlVersion: RamlVersion): Map<*, *> =
-            mapOf(status to bodies.toRamlMap(ramlVersion))
+            mapOf(status to if (bodies.isEmpty()) null else bodies.toRamlMap("body", ramlVersion))
 }
 
 data class Method(val method: String,
@@ -200,10 +200,10 @@ data class RamlFragment(val id: String,
 
         private fun response(map: Map<*,*>): Response {
             val status = map.keys.first() as Int
-            val values = map[status] as Map<*,*>
+            val values = map[status] as? Map<*,*>
             return Response(
                     status = status,
-                    bodies = listOf(body(values["body"] as Map<*,*>))
+                    bodies = if (values == null || values.isEmpty()) emptyList() else listOf(body(values["body"] as Map<*,*>))
             )
         }
 

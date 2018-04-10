@@ -149,6 +149,8 @@ ramldoc {
   get:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
+    responses:
+      200:
 """)
         File(testProjectDir.newFolder("build", "generated-snippets", "carts-list"), "raml-resource.raml").writeText("""/carts:
   get:

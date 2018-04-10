@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.jayway.jsonpath.JsonPath
 import org.amshove.kluent.`should be equal to`
+import org.amshove.kluent.`should be null`
 import org.amshove.kluent.`should not be empty`
 import org.junit.Test
 
@@ -49,8 +50,20 @@ class ToRamlMapTest: FragmentFixtures {
             read<String>("/tags/{id}.put.queryParameters.other.type") `should be equal to` "string"
             read<String>("/tags/{id}.put.body.application/hal+json.type.location").`should not be empty`()
             read<String>("/tags/{id}.put.body.application/hal+json.examples.tags-create.location").`should not be empty`()
-            read<String>("/tags/{id}.put.responses.200.application/hal+json.type.location").`should not be empty`()
-            read<String>("/tags/{id}.put.responses.200.application/hal+json.examples.tags-list.location").`should not be empty`()
+            read<String>("/tags/{id}.put.responses.200.body.application/hal+json.type.location").`should not be empty`()
+            read<String>("/tags/{id}.put.responses.200.body.application/hal+json.examples.tags-list.location").`should not be empty`()
+        }
+    }
+
+    @Test
+    fun `should convert resource with empty response`() {
+        val fragments = listOf(RamlFragment.fromYamlMap("some", parsedFragmentMap { rawFragmentWithEmptyResponse() }))
+
+        val ramlMap = RamlResource.fromFragments(fragments, NoOpJsonSchemaMerger).toRamlMap(RamlVersion.V_1_0)
+
+        with (JsonPath.parse(objectMapper.writeValueAsString(ramlMap))) {
+            read<String>("/payment-integrations/{paymentIntegrationId}.get.description").`should not be empty`()
+            read<Map<String, *>>("/payment-integrations/{paymentIntegrationId}.get.responses.200").`should be null`()
         }
     }
 }

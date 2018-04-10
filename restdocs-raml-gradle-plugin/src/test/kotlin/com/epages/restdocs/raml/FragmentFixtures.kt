@@ -33,6 +33,14 @@ interface FragmentFixtures {
             description: "some"
         """.trimIndent()
 
+    fun rawFragmentWithEmptyResponse() = """
+        /payment-integrations/{paymentIntegrationId}:
+          get:
+            description: "some"
+            responses:
+              200:
+        """.trimIndent()
+
     fun rawFullFragment() = """
         /tags/{id}:
           uriParameters:

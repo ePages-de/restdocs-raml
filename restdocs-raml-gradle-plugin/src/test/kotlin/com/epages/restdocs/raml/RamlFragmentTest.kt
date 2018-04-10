@@ -3,6 +3,7 @@ package com.epages.restdocs.raml
 import org.amshove.kluent.`should be equal to`
 import org.amshove.kluent.`should be null`
 import org.amshove.kluent.`should be`
+import org.amshove.kluent.`should contain`
 import org.amshove.kluent.`should equal`
 import org.amshove.kluent.`should not be null`
 import org.amshove.kluent.shouldBeEmpty
@@ -51,6 +52,20 @@ class RamlFragmentTest: FragmentFixtures {
             method.description.shouldNotBeNullOrEmpty()
             method.requestBodies.shouldBeEmpty()
             method.responses.shouldBeEmpty()
+        }
+    }
+
+    @Test
+    fun `should parse with empty response`() {
+        whenFragmentReadFromMap(this::rawFragmentWithEmptyResponse)
+
+        with(fragment) {
+            id `should be equal to` expectedId
+            path `should be equal to` "/payment-integrations/{paymentIntegrationId}"
+            method.method `should be equal to` "get"
+            method.description.shouldNotBeNullOrEmpty()
+            method.requestBodies.shouldBeEmpty()
+            method.responses `should contain` Response(200, emptyList())
         }
     }
 
