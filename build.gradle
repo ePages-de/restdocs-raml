@@ -4,7 +4,7 @@ buildscript {
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.30"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.31"
     }
 }
 
@@ -37,5 +37,5 @@ publish.dependsOn(':restdocs-raml:bintrayUpload')
 publish.dependsOn(':restdocs-raml-gradle-plugin:bintrayUpload')
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.3'
+	gradleVersion = '4.6'
 }
