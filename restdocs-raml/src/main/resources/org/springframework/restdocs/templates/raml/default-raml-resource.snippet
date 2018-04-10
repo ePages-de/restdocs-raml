@@ -31,9 +31,9 @@
       {{/requestFieldsPresent}}
         example: !include {{requestBodyFileName}}
   {{/requestBodyPresent}}
-  {{#responseBodyPresent}}
     responses:
       {{status}}:
+  {{#responseBodyPresent}}
         body:
           {{contentTypeResponse}}:
           {{#responseFieldsPresent}}
