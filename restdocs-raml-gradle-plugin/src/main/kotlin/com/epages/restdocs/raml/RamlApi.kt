@@ -135,9 +135,9 @@ data class RamlResource(val path: String,
                 Body(
                         contentType = contentType,
                         examples = bodies.mapNotNull { it.example },
-                        schema = jsonSchemaMerger.mergeSchemas(bodies.mapNotNull { it.schema })
-                )
-            }
+                        schema = bodies.mapNotNull { it.schema }
+                                .let { if (it.isNotEmpty()) jsonSchemaMerger.mergeSchemas(it) else null }
+                ) }
         }
 
         private fun mergeResponsesWithSameStatusAndContentType(
