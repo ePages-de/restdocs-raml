@@ -5,13 +5,10 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import java.io.File
 
 
-class JsonSchemaMerger(private val directory: File) {
+open class JsonSchemaMerger(private val directory: File) {
     private val objectMapper = ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT)
 
-    fun mergeSchemas(schemas: List<Include>): Include? {
-
-        if (schemas.isEmpty()) return null
-
+    open fun mergeSchemas(schemas: List<Include>): Include {
         val targetInclude = schemas
                 .sortedBy { it.location }
                 .first()

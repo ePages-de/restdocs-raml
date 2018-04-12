@@ -140,7 +140,7 @@ ramldoc {
   post:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
-    requestBody:
+    body:
       application/hal+json:
         schema: !include carts-create-request.json
         example: !include carts-create-request.json
@@ -149,6 +149,8 @@ ramldoc {
   get:
     description: "TODO - figure out how to set"
     securedBy: ["pymt:u"]
+    responses:
+      200:
 """)
         File(testProjectDir.newFolder("build", "generated-snippets", "carts-list"), "raml-resource.raml").writeText("""/carts:
   get:

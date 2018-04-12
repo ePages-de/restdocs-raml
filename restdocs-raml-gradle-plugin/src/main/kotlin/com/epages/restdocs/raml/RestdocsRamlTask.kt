@@ -1,5 +1,7 @@
 package com.epages.restdocs.raml
 
+import com.epages.restdocs.raml.RamlVersion.V_0_8
+import com.epages.restdocs.raml.RamlVersion.V_1_0
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
@@ -49,7 +51,6 @@ open class RestdocsRamlTask: DefaultTask() {
         val ramlFragments = snippetsDirectoryFile.walkTopDown()
                 .filter { it.name is String && it.name.startsWith("raml-resource") }
                 .map { RamlFragment.fromFile(it) }
-                .map { if (isRamlVersion1()) it.replaceSchemaWithType() else it }
                 .toList()
 
         writeFiles(ramlFragments, ".raml")
@@ -58,29 +59,36 @@ open class RestdocsRamlTask: DefaultTask() {
             writeFiles(ramlFragments.filterNot { it.privateResource }, "-public.raml")
     }
 
-    fun writeFiles(ramlFragments: List<RamlFragment>, fileNameSuffix: String) {
-        val fragmentProcessor = FragmentProcessor(isRamlVersion1(), JsonSchemaMerger(outputDirectoryFile))
 
-        val fragmentGroups = fragmentProcessor.groupFragments(ramlFragments)
-        RamlWriter.writeFile(
-                targetFile = project.file("${outputDirectory}/${outputFileNamePrefix}$fileNameSuffix"),
-                contentMap = fragmentProcessor.aggregateFileMap(
-                        apiTitle,
-                        apiBaseUri,
-                        outputFileNamePrefix,
-                        fragmentGroups,
-                        fileNameSuffix),
-                headerLine = if (isRamlVersion1()) "#%RAML 1.0" else "#%RAML 0.8"
+    private fun writeFiles(ramlFragments: List<RamlFragment>, fileNameSuffix: String) {
+
+        val ramlApi = ramlFragments.groupBy { it.path }
+                .map { (_, fragmentsWithSamePath) -> RamlResource.fromFragments(fragmentsWithSamePath, JsonSchemaMerger(outputDirectoryFile)) }
+                .let { ramlResources -> ramlResources
+                        .groupBy { it.firstPathPart }
+                        .map { (firstPathPart, resources) -> ResourceGroup(firstPathPart, resources) } }
+                .let { RamlApi(apiTitle, apiBaseUri, ramlVersion(), it) }
+
+        RamlWriter.writeApi(
+                fileFactory = { filename -> project.file("$outputDirectory/$filename") },
+                api = ramlApi,
+                apiFileName = "$outputFileNamePrefix$fileNameSuffix",
+                groupFileNameProvider = { path -> groupFileName(path, fileNameSuffix) }
         )
-
-        fragmentGroups.forEach {
-            RamlWriter.writeFile(
-                    targetFile = project.file("${outputDirectory}/${fragmentProcessor.groupFileName(it.commonPathPrefix, fileNameSuffix, outputFileNamePrefix)}"),
-                    contentMap = fragmentProcessor.groupFileMap(it)
-            )}
     }
 
-    private fun isRamlVersion1() = ramlVersion == "1.0"
+    private fun groupFileName(path: String, fileNameSuffix: String): String {
+        val fileNamePrefix = if (path == "/") "root" else path
+                .replaceFirst("/", "")
+                .replace("\\{", "")
+                .replace("}", "")
+                .replace("/", "-")
+
+        return if (fileNamePrefix == outputFileNamePrefix) "$fileNamePrefix-group$fileNameSuffix"
+        else "$fileNamePrefix$fileNameSuffix"
+    }
+
+    private fun ramlVersion() = if (ramlVersion == "1.0") V_1_0 else V_0_8
 
     private fun copyBodyJsonFilesToOutput() {
         snippetsDirectoryFile.walkTopDown().forEach {

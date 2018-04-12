@@ -5,3 +5,5 @@
       application/json:
         schema: !include test-schema-request.json
         example: !include test-request.json
+    responses:
+      200:
