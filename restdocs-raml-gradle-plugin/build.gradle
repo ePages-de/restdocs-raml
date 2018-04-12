@@ -16,16 +16,16 @@ group = 'com.epages'
 
 dependencies {
     compile gradleApi()
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.30")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.2.30")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.31")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.2.31")
     implementation("org.yaml:snakeyaml:1.20")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.9.5")
 
 
     testImplementation gradleTestKit()
     testImplementation("org.amshove.kluent:kluent:1.35")
     testImplementation("com.nhaarman:mockito-kotlin:1.5.0")
-    testImplementation("com.jayway.jsonpath:json-path:2.3.0")
+    testImplementation("com.jayway.jsonpath:json-path:2.4.0")
 }
 
 task sourceJar(type: Jar) {

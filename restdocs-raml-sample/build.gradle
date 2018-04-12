@@ -8,8 +8,8 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.9.RELEASE'
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.3.2'
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.11.RELEASE'
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.3.3'
         classpath 'com.bmuschko:gradle-docker-plugin:3.2.0'
     }
 }
@@ -38,12 +38,12 @@ dependencies {
     runtime 'com.h2database:h2'
     runtime 'org.atteo:evo-inflector:1.2.2'
 
-    testCompile 'com.epages:restdocs-raml:0.3.2'
+    testCompile 'com.epages:restdocs-raml:0.3.3'
     testCompile 'org.json:json:20170516'
     testCompile 'com.jayway.jsonpath:json-path'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.2.3.RELEASE'
-    testCompile 'org.springframework.restdocs:spring-restdocs-core:1.2.3.RELEASE'
+    testCompile 'org.springframework.restdocs:spring-restdocs-mockmvc:1.2.4.RELEASE'
+    testCompile 'org.springframework.restdocs:spring-restdocs-core:1.2.4.RELEASE'
     testCompile 'org.raml:raml-parser-2:1.0.15'
 }
 
