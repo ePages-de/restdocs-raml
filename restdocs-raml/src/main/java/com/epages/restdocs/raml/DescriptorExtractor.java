@@ -1,11 +1,6 @@
 package com.epages.restdocs.raml;
 
-import org.springframework.restdocs.hypermedia.LinkDescriptor;
-import org.springframework.restdocs.hypermedia.LinksSnippet;
-import org.springframework.restdocs.payload.AbstractFieldsSnippet;
-import org.springframework.restdocs.payload.FieldDescriptor;
-import org.springframework.restdocs.request.AbstractParametersSnippet;
-import org.springframework.restdocs.request.ParameterDescriptor;
+import static java.util.Collections.emptyList;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,7 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.Collections.emptyList;
+import org.springframework.restdocs.headers.AbstractHeadersSnippet;
+import org.springframework.restdocs.headers.HeaderDescriptor;
+import org.springframework.restdocs.hypermedia.LinkDescriptor;
+import org.springframework.restdocs.hypermedia.LinksSnippet;
+import org.springframework.restdocs.payload.AbstractFieldsSnippet;
+import org.springframework.restdocs.payload.FieldDescriptor;
+import org.springframework.restdocs.request.AbstractParametersSnippet;
+import org.springframework.restdocs.request.ParameterDescriptor;
 
 public class DescriptorExtractor {
 
@@ -40,6 +42,18 @@ public class DescriptorExtractor {
         return emptyList();
     }
 
+    public static List<HeaderDescriptor> extract(AbstractHeadersSnippet snippet) {
+        try {
+            Method getHeaderDescriptors = AbstractHeadersSnippet.class.getDeclaredMethod("getHeaderDescriptors");
+            getHeaderDescriptors.setAccessible(true);
+            return (List<HeaderDescriptor>) getHeaderDescriptors.invoke(snippet);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return emptyList();
+    }
+
     public static List<ParameterDescriptor> extract(AbstractParametersSnippet snippet) {
         try {
             Method getParameterDescriptors = AbstractParametersSnippet.class.getDeclaredMethod("getParameterDescriptors");
@@ -50,5 +64,4 @@ public class DescriptorExtractor {
         }
         return emptyList();
     }
-
 }

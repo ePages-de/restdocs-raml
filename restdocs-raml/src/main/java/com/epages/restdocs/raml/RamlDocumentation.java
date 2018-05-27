@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import org.springframework.restdocs.headers.HeaderDescriptor;
+import org.springframework.restdocs.headers.RequestHeadersSnippet;
+import org.springframework.restdocs.headers.ResponseHeadersSnippet;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.hypermedia.LinksSnippet;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
@@ -111,6 +114,8 @@ public class RamlDocumentation {
         List<LinksSnippet> linkSnippets = new ArrayList<>();
         List<RequestParametersSnippet> requestParametersSnippets = new ArrayList<>();
         List<PathParametersSnippet> pathParametersSnippets = new ArrayList<>();
+        List<RequestHeadersSnippet> requestHeadersSnippets = new ArrayList<>();
+        List<ResponseHeadersSnippet> responseHeadersSnippets = new ArrayList<>();
 
         List<Snippet> ramlSnippets = new ArrayList<>();
 
@@ -127,6 +132,10 @@ public class RamlDocumentation {
                 requestParametersSnippets.add((RequestParametersSnippet) snippet);
             } else if (snippet instanceof PathParametersSnippet) {
                 pathParametersSnippets.add((PathParametersSnippet) snippet);
+            } else if (snippet instanceof RequestHeadersSnippet) {
+                requestHeadersSnippets.add((RequestHeadersSnippet) snippet);
+            } else if (snippet instanceof ResponseHeadersSnippet) {
+                responseHeadersSnippets.add((ResponseHeadersSnippet) snippet);
             } else if (snippet instanceof RamlResourceSnippet) {
                 ramlSnippets.add(snippet);
             } else {
@@ -140,6 +149,8 @@ public class RamlDocumentation {
         enhancedSnippets.addAll(linkSnippets);
         enhancedSnippets.addAll(requestParametersSnippets);
         enhancedSnippets.addAll(pathParametersSnippets);
+        enhancedSnippets.addAll(requestHeadersSnippets);
+        enhancedSnippets.addAll(responseHeadersSnippets);
         enhancedSnippets.addAll(otherSnippets);
 
         if (ramlSnippets.isEmpty()) { // No RamlResourceSnippet, so we configure our own based on the info of the other snippets
@@ -151,6 +162,8 @@ public class RamlDocumentation {
                     .links(linkSnippets.stream().map(DescriptorExtractor::extract).flatMap(List::stream).toArray(LinkDescriptor[]::new))
                     .requestParameters(requestParametersSnippets.stream().map(DescriptorExtractor::extract).flatMap(List::stream).toArray(ParameterDescriptor[]::new))
                     .pathParameters(pathParametersSnippets.stream().map(DescriptorExtractor::extract).flatMap(List::stream).toArray(ParameterDescriptor[]::new))
+                    .requestHeaders(requestHeadersSnippets.stream().map(DescriptorExtractor::extract).flatMap(List::stream).toArray(HeaderDescriptor[]::new))
+                    .responseHeaders(responseHeadersSnippets.stream().map(DescriptorExtractor::extract).flatMap(List::stream).toArray(HeaderDescriptor[]::new))
                     .build();
             enhancedSnippets.add(ramlResource(ramlParameters));
         } else {

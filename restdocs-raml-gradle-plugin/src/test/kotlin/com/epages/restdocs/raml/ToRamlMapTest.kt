@@ -44,12 +44,17 @@ class ToRamlMapTest: FragmentFixtures {
             read<String>("/tags/{id}.put.description").`should not be empty`()
             read<List<String>>("/tags/{id}.put.securedBy").size `should be equal to` 2
             read<List<String>>("/tags/{id}.put.is").size `should be equal to` 1
+            read<String>("/tags/{id}.put.headers.X-Custom-Header.description").`should not be empty`()
+            read<String>("/tags/{id}.put.headers.X-Custom-Header.example").`should not be empty`()
             read<String>("/tags/{id}.put.queryParameters.some.description").`should not be empty`()
             read<String>("/tags/{id}.put.queryParameters.some.type") `should be equal to` "integer"
             read<String>("/tags/{id}.put.queryParameters.other.description").`should not be empty`()
             read<String>("/tags/{id}.put.queryParameters.other.type") `should be equal to` "string"
             read<String>("/tags/{id}.put.body.application/hal+json.type.location").`should not be empty`()
             read<String>("/tags/{id}.put.body.application/hal+json.examples.tags-create.location").`should not be empty`()
+            read<String>("/tags/{id}.put.headers.X-Custom-Header.description").`should not be empty`()
+            read<String>("/tags/{id}.put.responses.200.headers.X-Custom-Header.description").`should not be empty`()
+            read<String>("/tags/{id}.put.responses.200.headers.X-Custom-Header.example").`should not be empty`()
             read<String>("/tags/{id}.put.responses.200.body.application/hal+json.type.location").`should not be empty`()
             read<String>("/tags/{id}.put.responses.200.body.application/hal+json.examples.tags-list.location").`should not be empty`()
         }

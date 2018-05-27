@@ -69,9 +69,16 @@ data class Body(val contentType: String,
     }
 }
 
-data class Response(val status: Int, val bodies: List<Body>): ToRamlMap {
+data class Response(val status: Int,
+                    val bodies: List<Body>,
+                    val headers: List<Header> = emptyList()): ToRamlMap {
     override fun toRamlMap(ramlVersion: RamlVersion): Map<*, *> =
-            mapOf(status to if (bodies.isEmpty()) null else bodies.toRamlMap("body", ramlVersion))
+            if (bodies.isEmpty() && headers.isEmpty())
+                mapOf(status to null)
+            else
+                mapOf(status to (if (bodies.isEmpty()) emptyMap<String, Any>() else bodies.toRamlMap("body", ramlVersion))
+                        .plus(headers.toRamlMap("headers", ramlVersion))
+                )
 }
 
 data class Method(val method: String,
@@ -79,6 +86,7 @@ data class Method(val method: String,
                   val queryParameters: List<Parameter> = emptyList(),
                   val traits: List<String> = emptyList(),
                   val securedBy: List<String> = emptyList(),
+                  val headers: List<Header> = emptyList(),
                   val requestBodies: List<Body> = emptyList(),
                   val responses: List<Response> = emptyList()): ToRamlMap {
 
@@ -87,9 +95,18 @@ data class Method(val method: String,
                     .plus(queryParameters.toRamlMap("queryParameters", ramlVersion))
                     .let { if (traits.isNotEmpty()) it.plus("is" to traits) else it }
                     .let { if (securedBy.isNotEmpty()) it.plus("securedBy" to securedBy) else it }
+                    .plus(headers.toRamlMap("headers", ramlVersion))
                     .plus(requestBodies.toRamlMap("body", ramlVersion))
                     .plus(responses.toRamlMap("responses", ramlVersion))
             )
+}
+
+data class Header(val name: String, val description: String, val example: String): ToRamlMap {
+    override fun toRamlMap(ramlVersion: RamlVersion): Map<*, *> =
+            mapOf(name to mapOf(
+                    "description" to description,
+                    "example" to example
+            ))
 }
 
 data class RamlResource(val path: String,
@@ -146,6 +163,7 @@ data class RamlResource(val path: String,
             return responsesByStatus.map { (status, responses) ->
                 Response(
                         status = status,
+                        headers = responses.flatMap { it.headers },
                         bodies = mergeBodiesWithSameContentType(responses
                                 .flatMap { it.bodies }
                                 .groupBy { it.contentType }, jsonSchemaMerger)
@@ -200,10 +218,11 @@ data class RamlFragment(val id: String,
 
         private fun response(map: Map<*,*>): Response {
             val status = map.keys.first() as Int
-            val values = map[status] as? Map<*,*>
+            val values = (map[status] as? Map<*,*>).orEmpty()
             return Response(
                     status = status,
-                    bodies = if (values == null || values.isEmpty()) emptyList() else listOf(body(values["body"] as Map<*,*>))
+                    headers = headers((values["headers"] as? Map<*,*>).orEmpty()),
+                    bodies = if (values["body"] == null) emptyList() else listOf(body(values["body"] as Map<*,*>))
             )
         }
 
@@ -215,8 +234,9 @@ data class RamlFragment(val id: String,
                     description = methodContent["description"] as? String,
                     requestBodies = (methodContent["body"] as? Map<*,*>)?.let { listOf(body(it)) }.orEmpty(),
                     queryParameters = parameters((methodContent["queryParameters"] as? Map<*,*>).orEmpty()),
-                    traits =  (methodContent["is"] as? List<String>).orEmpty(),
-                    securedBy =  (methodContent["securedBy"] as? List<String>).orEmpty(),
+                    traits = (methodContent["is"] as? List<String>).orEmpty(),
+                    securedBy = (methodContent["securedBy"] as? List<String>).orEmpty(),
+                    headers = headers((methodContent["headers"] as? Map<*,*>).orEmpty()),
                     responses = response?.let { listOf(response(it)) }.orEmpty()
             )
         }
@@ -224,6 +244,12 @@ data class RamlFragment(val id: String,
         private fun parameters(map: Map<*,*>): List<Parameter> {
             return map.map { (key, value) -> with(value as Map<*, *>) {
                 Parameter(key as String, value["description"] as String, value["type"] as String)
+            } }
+        }
+
+        private fun headers(map: Map<*,*>): List<Header> {
+            return map.map { (key, value) -> with(value as Map<*, *>) {
+                Header(key as String, value["description"] as String, value["example"] as String)
             } }
         }
     }

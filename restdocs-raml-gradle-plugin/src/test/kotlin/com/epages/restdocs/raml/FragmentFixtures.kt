@@ -49,6 +49,10 @@ interface FragmentFixtures {
               description: The id
           put:
             description: Update a tag
+            headers:
+              X-Custom-Header:
+                description: A custom header
+                example: test
             securedBy: ["scope-one", "scope-two"]
             is: ["private"]
             queryParameters:
@@ -64,6 +68,10 @@ interface FragmentFixtures {
                 example: !include tags-create-request.json
             responses:
               200:
+                headers:
+                  X-Custom-Header:
+                    description: A custom header
+                    example: test
                 body:
                   application/hal+json:
                     schema: !include tags-list-schema-response.json

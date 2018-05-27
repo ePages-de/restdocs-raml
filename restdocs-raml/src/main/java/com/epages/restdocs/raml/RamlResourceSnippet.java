@@ -1,5 +1,7 @@
 package com.epages.restdocs.raml;
 
+import static com.epages.restdocs.raml.HeaderHandler.requestHeaderHandler;
+import static com.epages.restdocs.raml.HeaderHandler.responseHeaderHandler;
 import static java.util.Collections.singletonList;
 import static org.springframework.restdocs.config.SnippetConfigurer.DEFAULT_SNIPPET_ENCODING;
 import static org.springframework.restdocs.generate.RestDocumentationGenerator.ATTRIBUTE_NAME_URL_TEMPLATE;
@@ -41,7 +43,7 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
 
     private final JsonSchemaFromFieldDescriptorsGenerator jsonSchemasGenerator = new JsonSchemaFromFieldDescriptorsGenerator();
 
-    protected RamlResourceSnippet(RamlResourceSnippetParameters parameters) {
+    RamlResourceSnippet(RamlResourceSnippetParameters parameters) {
         super(SNIPPET_NAME, null);
         this.parameters = parameters;
 
@@ -52,6 +54,8 @@ public class RamlResourceSnippet extends TemplatedSnippet implements FileNameTra
                 new LinkHandler(),
                 new PathParameterHandler(),
                 new RequestParameterHandler(),
+                requestHeaderHandler(),
+                responseHeaderHandler(),
                 new TraitExtractorChain(singletonList(new PrivateResourceTraitExtractor()))));
     }
 
