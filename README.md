@@ -64,7 +64,7 @@ buildscript {
     }
     dependencies {
         //..
-        classpath 'com.epages:restdocs-raml-gradle-plugin:0.4.0' //2
+        classpath 'com.epages:restdocs-raml-gradle-plugin:0.4.1' //2
     }
 }
 //..
@@ -79,7 +79,7 @@ repositories { //4
 
 dependencies {
     //..
-    testCompile 'com.epages:restdocs-raml:0.4.0' //5
+    testCompile 'com.epages:restdocs-raml:0.4.1' //5
     testCompile 'org.json:json:20170516' //6
 }
 
