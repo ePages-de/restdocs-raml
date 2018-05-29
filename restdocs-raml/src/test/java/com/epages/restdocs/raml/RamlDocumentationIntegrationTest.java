@@ -2,14 +2,22 @@ package com.epages.restdocs.raml;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
-import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.restdocs.operation.OperationRequest;
 import org.springframework.restdocs.operation.preprocess.OperationRequestPreprocessor;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,22 +69,33 @@ public class RamlDocumentationIntegrationTest extends RamlResourceSnippetIntegra
 
     private void whenDocumentedWithRestdocsAndRaml() throws Exception {
         resultActions
-            .andDo(
-                RamlDocumentation.document(operationName,
-                    requestFields(fieldDescriptors().getFieldDescriptors()),
-                    responseFields(
-                        fieldWithPath("comment").description("the comment"),
-                        fieldWithPath("flag").description("the flag"),
-                        fieldWithPath("count").description("the count"),
-                        fieldWithPath("id").description("id"),
-                        subsectionWithPath("_links").ignored()
-                    ),
-                    links(
-                            linkWithRel("self").description("some"),
-                            linkWithRel("multiple").description("multiple")
-                    )
-                )
-            );
+                .andDo(print())
+                .andDo(
+                        RamlDocumentation.document(operationName,
+                                pathParameters(
+                                        parameterWithName("someId").description("someId"),
+                                        parameterWithName("otherId").description("otherId")
+                                ),
+                                requestFields(fieldDescriptors().getFieldDescriptors()),
+                                requestHeaders(
+                                        headerWithName("X-Custom-Header").description("some custom header")
+                                ),
+                                responseFields(
+                                        fieldWithPath("comment").description("the comment"),
+                                        fieldWithPath("flag").description("the flag"),
+                                        fieldWithPath("count").description("the count"),
+                                        fieldWithPath("id").description("id"),
+                                        subsectionWithPath("_links").ignored()
+                                ),
+                                responseHeaders(
+                                        headerWithName("X-Custom-Header").description("some custom header")
+                                ),
+                                links(
+                                        linkWithRel("self").description("some"),
+                                        linkWithRel("multiple").description("multiple")
+                                )
+                        )
+                );
     }
 
     private void whenDocumentedWithRamlSnippet() throws Exception {

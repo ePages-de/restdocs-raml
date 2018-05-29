@@ -23,6 +23,14 @@
     {{#traits}}
     is: {{traits}}
     {{/traits}}
+    {{#requestHeadersPresent}}
+    headers:
+    {{#requestHeaders}}
+      {{name}}:
+        description: {{description}}
+        example: {{example}}
+    {{/requestHeaders}}
+    {{/requestHeadersPresent}}
   {{#requestBodyPresent}}
     body:
       {{contentTypeRequest}}:
@@ -33,6 +41,14 @@
   {{/requestBodyPresent}}
     responses:
       {{status}}:
+      {{#responseHeadersPresent}}
+        headers:
+          {{#responseHeaders}}
+          {{name}}:
+            description: {{description}}
+            example: {{example}}
+          {{/responseHeaders}}
+      {{/responseHeadersPresent}}
   {{#responseBodyPresent}}
         body:
           {{contentTypeResponse}}:

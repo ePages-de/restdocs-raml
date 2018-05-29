@@ -49,6 +49,7 @@ class RamlFragmentTest: FragmentFixtures {
             id `should be equal to` expectedId
             path `should be equal to` "/payment-integrations/{paymentIntegrationId}"
             method.method `should be equal to` "get"
+            method.headers.shouldBeEmpty()
             method.description.shouldNotBeNullOrEmpty()
             method.requestBodies.shouldBeEmpty()
             method.responses.shouldBeEmpty()
@@ -65,6 +66,7 @@ class RamlFragmentTest: FragmentFixtures {
             method.method `should be equal to` "get"
             method.description.shouldNotBeNullOrEmpty()
             method.requestBodies.shouldBeEmpty()
+            method.headers.shouldBeEmpty()
             method.responses `should contain` Response(200, emptyList())
         }
     }
@@ -103,6 +105,11 @@ class RamlFragmentTest: FragmentFixtures {
                 queryParameters.map { it.description } `should equal` listOf("some", "other")
                 queryParameters.map { it.type } `should equal` listOf("integer", "string")
 
+                headers.size `should be` 1
+                headers.first().name `should equal` "X-Custom-Header"
+                headers.first().description `should equal` "A custom header"
+                headers.first().example `should equal` "test"
+
                 traits.size `should equal` 1
                 traits.first() `should equal` "private"
 
@@ -119,6 +126,12 @@ class RamlFragmentTest: FragmentFixtures {
                 responses.size `should be` 1
                 with(responses.first()) {
                     status `should equal` 200
+
+                    headers.size `should be` 1
+                    headers.first().name `should equal` "X-Custom-Header"
+                    headers.first().description `should equal` "A custom header"
+                    headers.first().example `should equal` "test"
+
                     bodies.first().example.`should not be null`()
                     bodies.first().schema.`should not be null`()
                 }

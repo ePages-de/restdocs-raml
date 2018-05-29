@@ -6,9 +6,13 @@ import static com.epages.restdocs.raml.RamlResourceDocumentation.parameterWithNa
 import static com.epages.restdocs.raml.RamlResourceDocumentation.ramlResource;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -39,6 +43,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -141,6 +146,14 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
         return ramlResource(RamlResourceSnippetParameters.builder()
                 .requestFields(fieldDescriptors())
                 .responseFields(fieldDescriptors().and(fieldWithPath("id").description("id")))
+                .requestHeaders(
+                        headerWithName("X-Custom-Header").description("A custom header"),
+                        headerWithName(ACCEPT).description("Accept")
+                )
+                .responseHeaders(
+                        headerWithName("X-Custom-Header").description("A custom header"),
+                        headerWithName(CONTENT_TYPE).description("ContentType")
+                )
                 .pathParameters(
                         parameterWithName("someId").description("some id").type(STRING),
                         parameterWithName("otherId").description("otherId id").type(INTEGER))
@@ -152,7 +165,7 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     }
 
     protected FieldDescriptors fieldDescriptors() {
-        final ConstrainedFields fields = new ConstrainedFields(TestDateHolder.class);
+        final ConstrainedFields fields = new ConstrainedFields(TestDataHolder.class);
         return RamlResourceDocumentation.fields(
                 fields.withPath("comment").description("the comment").optional(),
                 fields.withPath("flag").description("the flag"),
@@ -167,6 +180,8 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     protected void givenEndpointInvoked(String flagValue) throws Exception {
         resultActions = mockMvc.perform(post("/some/{someId}/other/{otherId}", "id", 1)
                 .contentType(APPLICATION_JSON)
+                .header("X-Custom-Header", "test")
+                .accept(HAL_JSON)
                 .content(String.format("{\n" +
                         "    \"comment\": \"some\",\n" +
                         "    \"flag\": %s,\n" +
@@ -196,21 +211,25 @@ public class RamlResourceSnippetIntegrationTest implements RamlResourceSnippetTe
     static class TestController {
 
         @PostMapping(path = "/some/{someId}/other/{otherId}")
-        public ResponseEntity<Resource<TestDateHolder>> doSomething(@PathVariable String someId,
-                                                                   @PathVariable Integer otherId,
-                                                                   @RequestBody TestDateHolder testDateHolder) {
-            testDateHolder.setId(UUID.randomUUID().toString());
-            Resource<TestDateHolder> resource = new Resource<>(testDateHolder);
-            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withSelfRel());
-            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withRel("multiple"));
-            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null)).withRel("multiple"));
-            return ResponseEntity.ok(resource);
+        public ResponseEntity<Resource<TestDataHolder>> doSomething(@PathVariable String someId,
+                                                                    @PathVariable Integer otherId,
+                                                                    @RequestHeader("X-Custom-Header") String customHeader,
+                                                                    @RequestBody TestDataHolder testDataHolder) {
+            testDataHolder.setId(UUID.randomUUID().toString());
+            Resource<TestDataHolder> resource = new Resource<>(testDataHolder);
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null, null)).withSelfRel());
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null, null)).withRel("multiple"));
+            resource.add(linkTo(methodOn(TestController.class).doSomething(someId, otherId, null, null)).withRel("multiple"));
+            return ResponseEntity
+                    .ok()
+                    .header("X-Custom-Header", customHeader)
+                    .body(resource);
         }
     }
 
     @RequiredArgsConstructor
     @Getter
-    static class TestDateHolder {
+    static class TestDataHolder {
         @NotNull
         private final String comment;
         private final boolean flag;

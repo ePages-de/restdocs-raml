@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.restdocs.headers.HeaderDescriptor;
 import org.springframework.restdocs.hypermedia.LinkDescriptor;
 import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -35,6 +36,8 @@ public class RamlResourceSnippetParameters {
     private final List<LinkDescriptor> links;
     private final List<ParameterDescriptorWithRamlType> pathParameters;
     private final List<ParameterDescriptorWithRamlType> requestParameters;
+    private final List<HeaderDescriptor> requestHeaders;
+    private final List<HeaderDescriptor> responseHeaders;
 
     List<FieldDescriptor> getResponseFieldsWithLinks() {
         List<FieldDescriptor> combinedDescriptors = new ArrayList<>(getResponseFields());
@@ -86,6 +89,8 @@ public class RamlResourceSnippetParameters {
         private List<LinkDescriptor> links = emptyList();
         private List<ParameterDescriptorWithRamlType> pathParameters = emptyList();
         private List<ParameterDescriptorWithRamlType> requestParameters = emptyList();
+        private List<HeaderDescriptor> requestHeaders = emptyList();
+        private List<HeaderDescriptor> responseHeaders = emptyList();
 
         public RamlResourceSnippetParametersBuilder requestFields(FieldDescriptor... requestFields) {
             this.requestFields = Arrays.asList(requestFields);
@@ -129,6 +134,16 @@ public class RamlResourceSnippetParameters {
 
         public RamlResourceSnippetParametersBuilder requestParameters(ParameterDescriptorWithRamlType... requestParameters) {
             this.requestParameters = Arrays.asList(requestParameters);
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder requestHeaders(HeaderDescriptor... requestHeaders) {
+            this.requestHeaders = Arrays.asList(requestHeaders);
+            return this;
+        }
+
+        public RamlResourceSnippetParametersBuilder responseHeaders(HeaderDescriptor... responseHeaders) {
+            this.responseHeaders = Arrays.asList(responseHeaders);
             return this;
         }
     }
