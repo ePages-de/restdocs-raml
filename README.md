@@ -10,7 +10,7 @@ This is an extension that adds [RAML (RESTful API Modeling Language)](https://ra
 
 Check out our [introductory blog post](https://developer.epages.com/blog/api-experience/restful-api-documentation-with-spring-rest-docs-and-raml/) for a quick overview. 
 
-Also there is a recording or a [recording of a talk held at the Spring IO 2018](https://www.youtube.com/watch?v=VwKc34W96Cw) about _Documenting RESTful APIs with Spring REST Docs and RAML_.
+Also there is a [recording of a talk held at the Spring IO 2018](https://www.youtube.com/watch?v=VwKc34W96Cw) about _Documenting RESTful APIs with Spring REST Docs and RAML_.
 
 <!-- TOC depthFrom:2 -->
 
