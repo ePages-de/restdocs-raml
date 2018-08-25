@@ -6,6 +6,13 @@
 [ ![Download](https://api.bintray.com/packages/epages/maven/restdocs-raml/images/download.svg)](https://bintray.com/epages/maven/restdocs-raml/_latestVersion)
 [![Join the chat at https://gitter.im/restdocs-raml/restdocs-raml](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/restdocs-raml/restdocs-raml?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+---
+
+:warning: This project has been superseeded by [restdocs-openapi](https://github.com/ePages-de/restdocs-openapi).
+You can still use `restdocs-openapi` and convert the output to RAML. See the [Convert to RAML section](https://github.com/ePages-de/restdocs-openapi#convert-to-raml) in the `resdocs-openapi` documentation.
+
+---
+
 This is an extension that adds [RAML (RESTful API Modeling Language)](https://raml.org) as an output format to [Spring REST Docs](https://projects.spring.io/spring-restdocs/).
 
 Check out our [introductory blog post](https://developer.epages.com/blog/api-experience/restful-api-documentation-with-spring-rest-docs-and-raml/) for a quick overview. 
